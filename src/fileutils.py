@@ -25,15 +25,30 @@ import pickle
 import gc
 
 class FileUtils(object):
-
+    """
+    Clase de lectura y escritura de ficheros
+    """
+    
     def __init__(self):
         self.data           = None
         self.logger = logging.getLogger("fhp-model")
 
 	"""
-	Funcion que vuelca el contenido de data en un pickle
 	"""
-    def dumpPickle(self,data,filename):
+    def dumpPickle(self,data : object ,filename: string):
+        
+        """
+	    Los comentarios debe ir debajo del nombre de la función para que 
+	    salga como comentario de la funcion
+	    
+	    Parameters:
+	        data:  Puede ser un array, dataframe o dictionary
+	        filename: Nombre del directorio a escribir, ojo tiene que ser le path
+	        completo
+	    Returns:
+	        nothing - no devuelve nada
+    	"""
+        
         output = open(filename, 'wb')
         gc.disable()
         pickle.dump(data, output, protocol=pickle.HIGHEST_PROTOCOL)
@@ -41,9 +56,19 @@ class FileUtils(object):
         output.close()
 
 	"""
-	Funcion que carga el contenido de un Pickle
 	"""
-    def loadPickle(self,filename):
+    def loadPickle(self,filename:string) -> object:
+        """
+	    Esta funcion lee de un pickle
+	    
+	    Parameters:
+	        filename: El fichero que queremos leer, ojo tiene que ser el
+	        path completo.
+	    
+	    Returns:
+	        data: Devuelve un dataframe o dictionary segun se haya volcado
+    	"""
+        
         output = open(filename, 'rb')
         gc.disable()
         data = pickle.load(output)
@@ -52,17 +77,27 @@ class FileUtils(object):
         return data
 
 	"""
-	Funcion ejemplo de la lectura de csv. Solo a titulo ilustrativo
+	
 	"""
-    def loadOutdoorData(self,building,cols):
-
+    def loadXXXData(self,subdir:string,cols:"list of ints") -> DataFrame:
+        
+        """
+	    Esta funcion lee de un fichero tipo csv y crea un dataframe
+	    
+	    Parameters:
+	        subdir: directorio a añadirr a la ruta ../repo/raw.
+	    
+	    Returns:
+	        data: Devuelve un dataframe
+    	"""
+    	
         self.logger.debug("Starting outdoor file upload")
 
         rms_df = pd.DataFrame()
-        for filename in glob.glob("../repo/outdoor/"+building+"/*.csv"):
+        for filename in glob.glob("../repo/raw/"+subdir+"/*.csv"):
             name = os.path.basename(filename)
 
-            self.logger.debug("Procesing outdoor file.." + name)
+            self.logger.debug("Procesing XXXX file.." + name)
             df = pd.read_csv(filename, sep=',', decimal='.')
             aux = pd.DataFrame()
 
@@ -80,9 +115,13 @@ class FileUtils(object):
         return rms_df
 
 	"""
-	Funcion que genera un cvs con dos columnas. Solo a titulo ilustrativo.
 	"""
-    def sendToCSV(self,idx_col, data_col,filename):
+    def sendToCSV(self,idx_col:int , data_col:int, filename:string):
+    
+        """
+	    Funcion que genera un cvs con dos columnas. Solo a titulo ilustrativo.
+    	"""
+        
         self.logger.debug("Starting CSV dump")
 
         aux_df = pd.DataFrame()
