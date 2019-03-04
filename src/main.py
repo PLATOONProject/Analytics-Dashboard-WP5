@@ -10,24 +10,14 @@ un fichero main
 import fileutils
 import logging
 import plotutils
+import packglobals
 
 if __name__ == "__main__":
    
-    FORMAT = '%(levelname)s - %(asctime)s - %(filename)s::%(funcName)s - %(message)s'
-    #logging.basicConfig(level=logging.DEBUG, format = '%(levelname)s - %(asctime)s - %(filename)s:%(lineno)s - %(message)s')
-    logging.basicConfig(level=logging.DEBUG, format = FORMAT)
-    logger = logging.getLogger("fhp-model")
-    
-    handler = logging.FileHandler('../output/out.log')
-    handler.setLevel(logging.DEBUG)
-    # create a logging format
-    formatter = logging.Formatter(FORMAT)
-    handler.setFormatter(formatter)
+   
+    logger = packglobals.logger
+    logger.info('Starting process...' + 'yeahhh...')
 
-    # add the handlers to the logge
-    logger.addHandler(handler)
-
-    logger.info("Starting main process..")
 
     BULD = BULD_2_3
     APTS = APTS_2_3
