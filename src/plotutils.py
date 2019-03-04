@@ -21,7 +21,7 @@ class PlotUtils(object):
 
     def __init__(self):
         self.data           = None
-        self.logger = logging.getLogger("fhp-model")
+        self.logger = packglobals.logging.getLogger("hpplanner")
 
 	'''
 	Esta funcion realiza el plot por días, una recomendación es que 

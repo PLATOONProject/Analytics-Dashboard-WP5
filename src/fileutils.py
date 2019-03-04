@@ -9,6 +9,7 @@ de ficheros se realice desde la misma. De esta forma si alguna vez cambia
 el origen de la fuente de datoss por ejemplo pasa a ser una base de datos
 simplemente hay que generar una clase equivalente
 """
+import packglobals
 import numpy as np
 import pandas as pd
 import logging
@@ -31,7 +32,7 @@ class FileUtils(object):
     
     def __init__(self):
         self.data           = None
-        self.logger = logging.getLogger("fhp-model")
+        self.logger = packglobals.logging.getLogger("hpplanner")
 
 	"""
 	"""
