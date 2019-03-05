@@ -12,6 +12,7 @@ llegado el caso
 
 import logging
 import fileutils
+import packglobals
 import matplotlib.pyplot as plt
 import pandas as pd
 import matplotlib.dates as mdates
