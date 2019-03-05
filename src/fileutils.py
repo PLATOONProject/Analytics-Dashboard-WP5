@@ -70,7 +70,7 @@ class FileUtils(object):
         gc.enable()
         output.close()
 
-    def loadPickle(self, filename: string) -> object:
+    def loadPickle(self, filename: str) -> object:
         """Example function with PEP 484 type annotations.
 
         Args:
@@ -87,7 +87,7 @@ class FileUtils(object):
         output.close()
         return data
 
-    def loadXXXData(self, subdir: string, cols: "list of ints") -> DataFrame:
+    def loadXXXData(self, subdir: str, cols: "list of ints") -> object:
         """Example function with PEP 484 type annotations.
 
         Args:
