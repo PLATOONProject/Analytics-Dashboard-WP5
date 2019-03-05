@@ -51,9 +51,7 @@ class FileUtils(object):
         self.data = None
         self.logger = packglobals.logging.getLogger("hpplanner")
 
-	"""
-	"""
-    def dumpPickle(self,data : object ,filename: string):
+    def dumpPickle(self, data: object, filename: string):
 
         """
 	    Los comentarios debe ir debajo del nombre de la función para que
