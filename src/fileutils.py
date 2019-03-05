@@ -26,22 +26,39 @@ import pickle
 import gc
 
 class FileUtils(object):
+    """Exceptions are documented in the same way as classes.
+
+    The __init__ method may be documented in either the class level
+    docstring, or as a docstring on the __init__ method itself.
+
+    Either form is acceptable, but the two should not be mixed. Choose one
+    convention to document the __init__ method and be consistent with it.
+
+    Note:
+        Do not include the `self` parameter in the ``Args`` section.
+
+    Args:
+        msg (str): Human readable string describing the exception.
+        code (:obj:`int`, optional): Error code.
+
+    Attributes:
+        msg (str): Human readable string describing the exception.
+        code (int): Exception error code.
+
     """
-    Clase de lectura y escritura de ficheros
-    """
-    
+
     def __init__(self):
-        self.data           = None
+        self.data = None
         self.logger = packglobals.logging.getLogger("hpplanner")
 
 	"""
 	"""
     def dumpPickle(self,data : object ,filename: string):
-        
+
         """
-	    Los comentarios debe ir debajo del nombre de la función para que 
+	    Los comentarios debe ir debajo del nombre de la función para que
 	    salga como comentario de la funcion
-	    
+
 	    Parameters:
 	        data:  Puede ser un array, dataframe o dictionary
 	        filename: Nombre del directorio a escribir, ojo tiene que ser le path
@@ -49,7 +66,7 @@ class FileUtils(object):
 	    Returns:
 	        nothing - no devuelve nada
     	"""
-        
+
         output = open(filename, 'wb')
         gc.disable()
         pickle.dump(data, output, protocol=pickle.HIGHEST_PROTOCOL)
@@ -61,15 +78,15 @@ class FileUtils(object):
     def loadPickle(self,filename:string) -> object:
         """
 	    Esta funcion lee de un pickle
-	    
+
 	    Parameters:
 	        filename: El fichero que queremos leer, ojo tiene que ser el
 	        path completo.
-	    
+
 	    Returns:
 	        data: Devuelve un dataframe o dictionary segun se haya volcado
     	"""
-        
+
         output = open(filename, 'rb')
         gc.disable()
         data = pickle.load(output)
@@ -78,20 +95,20 @@ class FileUtils(object):
         return data
 
 	"""
-	
+
 	"""
     def loadXXXData(self,subdir:string,cols:"list of ints") -> DataFrame:
-        
+
         """
 	    Esta funcion lee de un fichero tipo csv y crea un dataframe
-	    
+
 	    Parameters:
 	        subdir: directorio a añadirr a la ruta ../repo/raw.
-	    
+
 	    Returns:
 	        data: Devuelve un dataframe
     	"""
-    	
+
         self.logger.debug("Starting outdoor file upload")
 
         rms_df = pd.DataFrame()
@@ -118,11 +135,11 @@ class FileUtils(object):
 	"""
 	"""
     def sendToCSV(self,idx_col:int , data_col:int, filename:string):
-    
+
         """
 	    Funcion que genera un cvs con dos columnas. Solo a titulo ilustrativo.
     	"""
-        
+
         self.logger.debug("Starting CSV dump")
 
         aux_df = pd.DataFrame()
