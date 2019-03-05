@@ -29,24 +29,19 @@ import gc
 
 
 class FileUtils(object):
-    """Exceptions are documented in the same way as classes.
+    """The summary line for a class docstring should fit on one line.
 
-    The __init__ method may be documented in either the class level
-    docstring, or as a docstring on the __init__ method itself.
+    If the class has public attributes, they may be documented here
+    in an ``Attributes`` section and follow the same formatting as a
+    function's ``Args`` section. Alternatively, attributes may be documented
+    inline with the attribute's declaration (see __init__ method below).
 
-    Either form is acceptable, but the two should not be mixed. Choose one
-    convention to document the __init__ method and be consistent with it.
-
-    Note:
-        Do not include the `self` parameter in the ``Args`` section.
-
-    Args:
-        msg (str): Human readable string describing the exception.
-        code (:obj:`int`, optional): Error code.
+    Properties created with the ``@property`` decorator should be documented
+    in the property's getter method.
 
     Attributes:
-        msg (str): Human readable string describing the exception.
-        code (int): Exception error code.
+        attr1 (str): Description of `attr1`.
+        attr2 (:obj:`int`, optional): Description of `attr2`.
 
     """
 
