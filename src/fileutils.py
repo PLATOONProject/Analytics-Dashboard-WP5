@@ -122,7 +122,7 @@ class FileUtils(object):
         rms_df.interpolate(inplace=True)
         return rms_df
 
-    def sendToCSV(self, idx_col: int , data_col: int, filename: string):
+    def sendToCSV(self, idx_col: int, data_col: int, filename: str):
         """Funcion que genera un cvs con dos columnas.
             Solo a titulo ilustrativo.
 
