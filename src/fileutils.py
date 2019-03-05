@@ -22,6 +22,7 @@ import numpy
 
 from os import listdir
 from os.path import isfile, join
+from typing import List, Dict, Tuple, Sequence
 
 import pickle
 import gc
@@ -87,7 +88,7 @@ class FileUtils(object):
         output.close()
         return data
 
-    def loadXXXData(self, subdir: str, cols: "list of ints") -> object:
+    def loadXXXData(self, subdir: str, cols: List[int]) -> object:
         """Example function with PEP 484 type annotations.
 
         Args:
