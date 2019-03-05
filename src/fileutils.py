@@ -26,6 +26,7 @@ from os.path import isfile, join
 import pickle
 import gc
 
+
 class FileUtils(object):
     """Exceptions are documented in the same way as classes.
 
@@ -52,19 +53,16 @@ class FileUtils(object):
         self.data = None
         self.logger = packglobals.logging.getLogger("hpplanner")
 
-    def dumpPickle(self, data: object, filename: string):
+    def dumpPickle(self, data: object, filename: str):
+        """Example function with PEP 484 type annotations.
 
+        Args:
+            data: puede ser un array, dataframe o dictionary.
+            filename: full path del directorio a escribir.
+
+        Returns:
+            nothing
         """
-	    Los comentarios debe ir debajo del nombre de la función para que
-	    salga como comentario de la funcion
-
-	    Parameters:
-	        data:  Puede ser un array, dataframe o dictionary
-	        filename: Nombre del directorio a escribir, ojo tiene que ser le path
-	        completo
-	    Returns:
-	        nothing - no devuelve nada
-    	"""
 
         output = open(filename, 'wb')
         gc.disable()
@@ -72,19 +70,15 @@ class FileUtils(object):
         gc.enable()
         output.close()
 
-	"""
-	"""
-    def loadPickle(self,filename:string) -> object:
+    def loadPickle(self, filename: string) -> object:
+        """Example function with PEP 484 type annotations.
+
+        Args:
+            filename: full path del directorio a escribir.
+
+        Returns:
+            data: Devuelve un dataframe o dictionary segun se haya volcado.
         """
-	    Esta funcion lee de un pickle
-
-	    Parameters:
-	        filename: El fichero que queremos leer, ojo tiene que ser el
-	        path completo.
-
-	    Returns:
-	        data: Devuelve un dataframe o dictionary segun se haya volcado
-    	"""
 
         output = open(filename, 'rb')
         gc.disable()
@@ -93,20 +87,15 @@ class FileUtils(object):
         output.close()
         return data
 
-	"""
+    def loadXXXData(self, subdir: string, cols: "list of ints") -> DataFrame:
+        """Example function with PEP 484 type annotations.
 
-	"""
-    def loadXXXData(self,subdir:string,cols:"list of ints") -> DataFrame:
+        Args:
+            subdir: directorio a añadirr a la ruta ../repo/raw.
 
+        Returns:
+            data: dataframe.
         """
-	    Esta funcion lee de un fichero tipo csv y crea un dataframe
-
-	    Parameters:
-	        subdir: directorio a añadirr a la ruta ../repo/raw.
-
-	    Returns:
-	        data: Devuelve un dataframe
-    	"""
 
         self.logger.debug("Starting outdoor file upload")
 
@@ -118,7 +107,8 @@ class FileUtils(object):
             df = pd.read_csv(filename, sep=',', decimal='.')
             aux = pd.DataFrame()
 
-            aux["DATE"] = pd.to_datetime(df.iloc[:, 0].values, format="%Y-%m-%d %H:%M")
+            aux["DATE"] = pd.to_datetime(df.iloc[:, 0].values,
+                                         format="%Y-%m-%d %H:%M")
             aux = aux.set_index("DATE")
             aux["TEMP"] = df.iloc[:, cols[0]].values
             # aux["FAKE"] = df.iloc[:, cols[1]].values
@@ -131,13 +121,16 @@ class FileUtils(object):
         rms_df.interpolate(inplace=True)
         return rms_df
 
-	"""
-	"""
-    def sendToCSV(self,idx_col:int , data_col:int, filename:string):
+    def sendToCSV(self, idx_col: int , data_col: int, filename: string):
+        """Funcion que genera un cvs con dos columnas.
+            Solo a titulo ilustrativo.
 
+        Args:
+            idx_col: directorio a añadirr a la ruta ../repo/raw.
+
+        Returns:
+            data: dataframe.
         """
-	    Funcion que genera un cvs con dos columnas. Solo a titulo ilustrativo.
-    	"""
 
         self.logger.debug("Starting CSV dump")
 
