@@ -15,6 +15,10 @@ import os
 import pandas
 import numpy
 
+"""
+Import that defines the log behavior...
+"""
+import packglobals
 
 def function_with_pep484_type_annotations(param1: int, param2: str) -> bool:
     """Example function with PEP 484 type annotations.
@@ -175,7 +179,8 @@ class ExampleClass(object):
         self.attr4 = ['attr4']
 
         self.attr5 = None
-        """str: Docstring *after* attribute, with type specified."""
+        self.logger = packglobals.logging.getLogger("thisapp")
+		"""str: Docstring *after* attribute, with type specified."""
 
     @property
     def readonly_property(self):
@@ -201,7 +206,7 @@ class ExampleClass(object):
 
         Note:
             Do not include the `self` parameter in the ``Args`` section.
-
+			https://airbrake.io/blog/python-exception-handling/class-hierarchy -> list of Exception and hierarchy	
         Args:
             param1: The first parameter.
             param2: The second parameter.
@@ -210,4 +215,24 @@ class ExampleClass(object):
             True if successful, False otherwise.
 
         """
-        return True
+		self.logger.info('Starting function...' + self.example_method.__qualname__)
+		result = None
+		try:
+			# bla bla bla...
+			# bla bla bla...
+			# bla bla bla...
+			for i in range(n):
+				self.logger.debug('In the loooop for ' + str(i)
+				yield i
+			# bla bla bla...
+			# bla bla bla...			
+			
+			result = True
+			
+        except Exception as e:
+			self.logger.debug(traceback.format_exc())
+            self.logger.error('Error in loop')
+            result = None
+		
+		self.logger.info('..ending function' + self.example_method.__qualname__)
+        return result
