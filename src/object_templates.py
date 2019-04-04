@@ -14,11 +14,12 @@ with a section header and a colon followed by a block of indented text.
 import os
 import pandas
 import numpy
-
+import packglobals
+import traceback
 """
 Import that defines the log behavior...
 """
-import packglobals
+
 
 def function_with_pep484_type_annotations(param1: int, param2: str) -> bool:
     """Example function with PEP 484 type annotations.
@@ -180,7 +181,9 @@ class ExampleClass(object):
 
         self.attr5 = None
         self.logger = packglobals.logging.getLogger("thisapp")
-		"""str: Docstring *after* attribute, with type specified."""
+        """
+        str: Docstring *after* attribute, with type specified.
+        """ 
 
     @property
     def readonly_property(self):
@@ -215,24 +218,17 @@ class ExampleClass(object):
             True if successful, False otherwise.
 
         """
-		self.logger.info('Starting function...' + self.example_method.__qualname__)
-		result = None
-		try:
-			# bla bla bla...
-			# bla bla bla...
-			# bla bla bla...
-			for i in range(n):
-				self.logger.debug('In the loooop for ' + str(i)
-				yield i
-			# bla bla bla...
-			# bla bla bla...			
-			
-			result = True
-			
+        self.logger.info('Starting function...' + self.example_method.__qualname__)
+        result = None
+        try:
+            for i in range (10):
+                self.logger.debug('In the loooop for ' + str(i))
+                # yield i
         except Exception as e:
-			self.logger.debug(traceback.format_exc())
+            self.logger.debug(traceback.format_exc())
             self.logger.error('Error in loop')
             result = None
-		
-		self.logger.info('..ending function' + self.example_method.__qualname__)
+
+        self.logger.info('..ending function' + self.example_method.__qualname__)
+
         return result
