@@ -1,5 +1,6 @@
 Carpeta que contiene todas los ficheros que se utilicen como entrada, csv...
 Por favor indica aqui debajo en que carpeta de T has dejado el repositorio original
+(es la misma carpeta que aparecera en la variable INPUT_REPO del archivo copyRepo.bat) 
 
 T:\.....
 
