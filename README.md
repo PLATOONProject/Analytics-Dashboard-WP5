@@ -1,2 +1,2 @@
-# Skel_console_python
+# skel_project
 
