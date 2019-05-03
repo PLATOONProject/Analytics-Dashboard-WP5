@@ -4,11 +4,14 @@ __pycache__/
 *$py.class
 .idea/
 
+# file formats
 *.csv
 *.png
 *.pkl
 *.xls
 *.xlsx
+*.xml
+*.xsd
 
 # C extensions
 *.so
