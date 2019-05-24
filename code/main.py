@@ -1,39 +1,44 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+Created on: insert date (e.g. 2020/12/25)
+@author: your name, username or email (e.g. name.surname@tecnalia.com)
 
-@author: 105083
-
-Funcion ejemplo de como utilizar el logger, plotutils y fileutils desde
-un fichero main
+Short description of the aims of the script.
 """
 
-import fileutils
-import logging
-import plotutils
-import packglobals
-import object_templates
+from logging import getLogger
+from logging.config import fileConfig
+from configparser import ConfigParser
+from my_module import MyClass
+
 
 if __name__ == "__main__":
 
-    logger = packglobals.logger
-    logger.info('Starting process...' + 'yeahhh...')
+    # --------------------------------------------------------------------------
+    # Logger configuration
+    # --------------------------------------------------------------------------
+    fileConfig('logging_config.ini')
+    logger = getLogger(__name__)
 
+    logger.info('Starting process.')
 
-    of = object_templates.ExampleClass(None,None,None)
-    of.example_method (None,None)
-    """
-    fu = fileutils.FileUtils()
-    pu = plotutils.PlotUtils()
-	
-	Las llamadas y funciones que se muestran a continuación carecen de funcionalida
-	simplemente tratan de ilustrar como se haría uso de las clases anteriormente
-	instanciadas, fileutils y plotutils
-	"""
-    # df_out = fu.loadOutdoorData(BULD,OUTD)
-    # df_ene = fu.loadEnergyData(BULD,ENER)
-    # df_ind = fu.loadIndoorData(BULD,APTS)
+    # --------------------------------------------------------------------------
+    # Application configuration
+    # --------------------------------------------------------------------------
+    config = ConfigParser(allow_no_value=True)
+    config.read('config.ini')
 
-    # pu.doPlotDaily(dct_ind, dct_out, dct_ene)
+    # --------------------------------------------------------------------------
+    # Code referring to my_module
+    # --------------------------------------------------------------------------
+    myclass = MyClass()
 
-    logger.info(".. process ended")
+    # insert your code here
+
+    # --------------------------------------------------------------------------
+    # Code referring to other module
+    # --------------------------------------------------------------------------
+    # insert your code here
+
+    logger.info("The End")
