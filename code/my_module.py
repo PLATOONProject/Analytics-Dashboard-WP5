@@ -13,10 +13,7 @@ from configparser import ConfigParser
 class MyClass:
     def __init__(self, logger=None):
         # set logger
-        if logger:
-            self.logger = logger
-        else:
-            self.logger = getLogger('__main__')
+        self.logger = getLogger('__main__') if logger is None else logger
         # parse config.ini file
         self.config = ConfigParser(allow_no_value=True)
         self.config.read('config.ini')
