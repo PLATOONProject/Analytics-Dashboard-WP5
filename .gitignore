@@ -4,12 +4,6 @@ __pycache__/
 *$py.class
 .idea/
 
-*.csv
-*.png
-*.pkl
-*.xls
-*.xlsx
-
 # C extensions
 *.so
 
@@ -21,7 +15,6 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
 lib64/
 parts/
 sdist/

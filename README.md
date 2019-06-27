@@ -1,2 +1,2 @@
-# skel_project
-
+# Project Name
+Project description.
