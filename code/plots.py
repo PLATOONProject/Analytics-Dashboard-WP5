@@ -17,7 +17,7 @@ from logging import getLogger, NullHandler
 from numpy import linspace, histogram, zeros, pi, polyfit, poly1d, isnan, array
 from pandas import notnull, DataFrame, Series
 from pandas.api.types import is_numeric_dtype, is_datetime64_any_dtype
-from pynalia.bokeh_palettes import rainbow
+from bokeh_palettes import rainbow
 from typing import Dict, Iterable, Tuple, Union, Sequence, List
 
 # Add do-nothing handler to the module logger.
