@@ -52,7 +52,9 @@ async def get_time_lines(request: Request):
 
     # get data from CDS
     try:
-        data_cds = read_pickle("./code/meteo_cds.pkl")
+        #data_cds = read_pickle("./code/meteo_cds.pkl")
+        data_cds = read_pickle("meteo_cds.pkl")
+        data_cds = data_cds.dropna()
     except FileNotFoundError:
         print(f'File does not exist. ')
 
