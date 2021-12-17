@@ -1,0 +1,42 @@
+<hr>
+        <label>Select your dashboard </label>
+        <ng-select [items]="dashboards"
+                   bindLabel="name"
+                   bindValue="value"
+                   placeholder="Select dashboard"
+                   [(ngModel)]="selectedDashboard">
+
+        </ng-select>
+
+
+        <div [ngSwitch]="selectedDashboard">
+          <div *ngSwitchCase="'lines'">
+            <hr>
+            <p>Pickle column name</p>
+            <input #column type="text" name="">
+            <hr>
+            <button class="btn btn-danger" (click)="onAddDashboard(column.value)">Add TimeLines</button>
+          </div>
+          <div *ngSwitchCase="'dots'">
+            <hr>
+            <p>Pickle column name</p>
+            <input #column type="text" name="">
+            <hr>
+            <button class="btn btn-danger">Add Dots</button>
+          </div>
+          <div *ngSwitchCase="'scatter'">
+            <hr>
+            <p>Pickle column name</p>
+            <input #column type="text" name="">
+            <hr>
+            <button class="btn btn-danger">Add Scatter</button>
+          </div>
+          <div *ngSwitchDefault="'lines'">
+          </div>
+        </div>
+        <div *ngFor="let dashboard of selectedDashboards">
+          <p>{{dashboard.name}} / {{dashboard.column}}</p>
+        </div>
+        <hr />
+        <button class="btn" (click)="generate()">Generate</button>
+        <div style="margin-top:300px"></div>
