@@ -3,6 +3,8 @@ import uvicorn
 import pandas as pd
 from urllib import request
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
+
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from typing import Dict, Iterable, Tuple, Union, Sequence, List
@@ -14,6 +16,18 @@ from bokeh.plotting import output_file, show, figure, save
 from bokeh.layouts import layout, row
 
 app = FastAPI()
+origins = [
+    "http://localhost",
+    "http://localhost:4200",
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 templates = Jinja2Templates(directory=".")
 
 @app.get("/time_lines")

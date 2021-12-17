@@ -1,12 +1,14 @@
 import { Component, OnInit } from '@angular/core';
 import { NgOption } from '@ng-select/ng-select';
 
+import { ApiService } from '../api.service';
+
 @Component({
   selector: 'app-first-form',
   templateUrl: './first-form.component.html',
   styleUrls: ['./first-form.component.scss']
 })
-export class FirstFormComponent {
+export class FirstFormComponent implements OnInit{
 
     dashboards = [
         {id: 1, value:"lines", name: 'Time Lines', avatar: '//www.gravatar.com/avatar/b0d8c6e5ea589e6fc3d3e08afb1873bb?d=retro&r=g&s=30 2x'},
@@ -16,8 +18,10 @@ export class FirstFormComponent {
 
     selectedDashboard;
     selectedDashboards = [];
+    htmlDashboard;
+    innerHtml;
 
-    constructor() {
+    constructor(private apiService: ApiService) {
     }
 
     onAddDashboard(column){
@@ -29,6 +33,21 @@ export class FirstFormComponent {
     }
 
     generate(){
-      alert(this.selectedDashboards.length)
+      console.log("generating")
+      //this.htmlDashboard=this.apiService.getServices()
+
+      this.apiService.getResults()
+      .subscribe(data => {
+            this.innerHtml = data;
+         },
+         error => console.log('Error from backend API', +error));
+
+      console.log("generated")
+      console.log(this.htmlDashboard)
+    }
+
+
+    ngOnInit(){
+      
     }
 }
