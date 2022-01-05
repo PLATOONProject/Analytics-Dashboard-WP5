@@ -18,36 +18,36 @@ export class FirstFormComponent implements OnInit{
 
     selectedDashboard;
     selectedDashboards = [];
-    htmlDashboard;
     innerHtml;
+    showPlot = false;
 
     constructor(private apiService: ApiService) {
     }
 
-    onAddDashboard(column){
+    onAddDashboard(params){
       var dashboard = {
          name: this.selectedDashboard,
-         column: column
+         params: params
       };
       this.selectedDashboards.push(dashboard);
+      this.showPlot = false;
     }
 
     generate(){
       console.log("generating")
-      //this.htmlDashboard=this.apiService.getServices()
-
-      this.apiService.getResults()
-      .subscribe(data => {
+      this.apiService.generatePlots(this.selectedDashboards)
+      .subscribe(
+         data => {
             this.innerHtml = data;
          },
-         error => console.log('Error from backend API', +error));
+         error => console.log('There is no plot generated', + error));
 
+      this.showPlot = true;
       console.log("generated")
-      console.log(this.htmlDashboard)
     }
 
 
     ngOnInit(){
-      
+
     }
 }

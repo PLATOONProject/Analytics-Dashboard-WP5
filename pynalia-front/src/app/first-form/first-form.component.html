@@ -35,10 +35,16 @@
           </div>
         </div>
         <div *ngFor="let dashboard of selectedDashboards">
-          <p>{{dashboard.name}} / {{dashboard.column}}</p>
+          <p>{{dashboard.name}} / {{dashboard.params}}</p>
         </div>
-        <hr />
         <button class="btn" (click)="generate()">Generate</button>
-        <hr />
-        <div class="one" [innerHtml]="innerHtml"></div>
-        <div style="margin-top:300px"></div>
+
+        <div *ngIf="showPlot">
+                <iframe frameborder="0"
+                scrolling="no"
+                style="overflow:hidden;height:1000px;width:100%"
+                height="100%"
+                width="100%" src="http://localhost:8000/show"></iframe>
+        </div>
+
+
