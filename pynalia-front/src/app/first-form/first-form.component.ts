@@ -18,13 +18,19 @@ export class FirstFormComponent implements OnInit{
 
     selectedDashboard;
     selectedDashboards = [];
+    selectedDashboardsXpan = [];
     innerHtml;
     showPlot = false;
+    xpanBool = false;
 
     constructor(private apiService: ApiService) {
     }
 
-    onAddDashboard(params){
+    public onSaveXpanChanged(value:boolean){
+        this.xpanBool = value;
+    }
+
+    public onAddDashboard(params){
       var dashboard = {
          name: this.selectedDashboard,
          params: params
@@ -33,8 +39,14 @@ export class FirstFormComponent implements OnInit{
       this.showPlot = false;
     }
 
-    generate(){
+    public generate(){
       console.log("generating")
+      var xpan = {
+         name: "xpan",
+         params: this.xpanBool
+      };
+      //this.selectedDashboardsXpan = { ...this.selectedDashboards };;
+      //this.selectedDashboardsXpan.push(xpan);
       this.apiService.generatePlots(this.selectedDashboards)
       .subscribe(
          data => {

@@ -22,18 +22,26 @@
             <p>Pickle column name</p>
             <input #column type="text" name="">
             <hr>
-            <button class="btn btn-danger">Add Dots</button>
+            <button class="btn btn-danger" (click)="onAddDashboard(column.value)">Add Dots</button>
           </div>
           <div *ngSwitchCase="'scatter'">
             <hr>
             <p>Pickle column name</p>
             <input #column type="text" name="">
             <hr>
-            <button class="btn btn-danger">Add Scatter</button>
+            <button class="btn btn-danger" (click)="onAddDashboard(column.value)">Add Scatter</button>
           </div>
           <div *ngSwitchDefault="'lines'">
           </div>
         </div>
+
+        <input #saveXpan
+            id="saveXpan"
+            type="checkbox"
+            [checked]="xpanBool"
+            (change)="onSaveXpanChanged(saveXpan.checked)" />Xpan
+
+        <hr>
         <div *ngFor="let dashboard of selectedDashboards">
           <p>{{dashboard.name}} / {{dashboard.params}}</p>
         </div>
@@ -43,8 +51,14 @@
                 <iframe frameborder="0"
                 scrolling="no"
                 style="overflow:hidden;height:1000px;width:100%"
-                height="100%"
-                width="100%" src="http://localhost:8000/show"></iframe>
+                src="http://localhost:8000/showPlot"></iframe>
+        </div>
+
+        <div *ngIf="showPlot">
+                <iframe frameborder="0"
+                scrolling="no"
+                style="overflow:hidden;height:1000px;width:100%"
+                src="http://localhost:8000/showScatter"></iframe>
         </div>
 
 
