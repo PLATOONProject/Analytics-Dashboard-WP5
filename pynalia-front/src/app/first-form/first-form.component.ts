@@ -45,9 +45,10 @@ export class FirstFormComponent implements OnInit{
          name: "xpan",
          params: this.xpanBool
       };
-      //this.selectedDashboardsXpan = { ...this.selectedDashboards };;
-      //this.selectedDashboardsXpan.push(xpan);
-      this.apiService.generatePlots(this.selectedDashboards)
+      //this.selectedDashboardsXpan = { ...this.selectedDashboards };
+      this.selectedDashboardsXpan = Object.assign([], this.selectedDashboards);
+      this.selectedDashboardsXpan.push(xpan);
+      this.apiService.generatePlots(this.selectedDashboardsXpan)
       .subscribe(
          data => {
             this.innerHtml = data;
