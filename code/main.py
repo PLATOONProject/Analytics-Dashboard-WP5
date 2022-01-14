@@ -11,7 +11,7 @@ from fastapi.templating import Jinja2Templates
 from pandas import read_pickle
 from fastapi.responses import HTMLResponse
 
-from plots import time_lines, time_range_tool, time_lines_and_dots, time_scatter, scatter
+from plots import time_lines, time_range_tool, time_lines_and_dots, scatter, time_scatter, time_bars
 
 app = FastAPI()
 origins = [
@@ -27,8 +27,11 @@ app.add_middleware(
     allow_headers=["*"],
 )
 app.templates = Jinja2Templates(directory=".")
-app.scatterHtml = None
 app.plotsHtml = None
+app.xpan = False
+app.scatter = False
+app.plots = False
+
 
 # Python3 code here for creating class
 class Plot:
@@ -58,62 +61,71 @@ async def generate(plot_list: List):
     p_params = dict(width=1200, height=250)
     sc_param = dict(size=5, width=700, height=700, hist_axes=True,
                     get_regression=False, hoover=True)
+    app.scatter = False
+    app.plots = False
+
     for plot in plot_list:
         print(plot)
-        # switch
+        #  Try to convert list to PlotArray
         if plot['name'] == 'lines':
-            # Try to convert list to PlotArray
             if plot_list.index(plot) != 0:
                 p = time_lines(obj=data_cds[plot['params']], xrange=p.x_range, **p_params)
             else:
                 p = time_lines(obj=data_cds[plot['params']], **p_params)
             p_lines.append(p)
-        elif plot['name'] == 'dots':
-            # Try to convert list to PlotArray
+            app.plots = True
+        elif plot['name'] == 'timescatter':
             if plot_list.index(plot) != 0:
-                p = time_lines_and_dots(obj=data_cds[plot['params']], xrange=p.x_range, **p_params)
+                p = time_scatter(obj=data_cds[plot['params']], xrange=p.x_range, **p_params)
             else:
-                p = time_lines_and_dots(obj=data_cds[plot['params']], **p_params)
+                p = time_scatter(obj=data_cds[plot['params']], **p_params)
             p_lines.append(p)
-        elif plot['name'] == 'xpan':
-            print(plot['params'])
+            app.plots = True
+        elif plot['name'] == 'bars':
+            if plot_list.index(plot) != 0:
+                p = time_bars(obj=data_cds[plot['params']], xrange=p.x_range, **p_params)
+            else:
+                p = time_bars(obj=data_cds[plot['params']], **p_params)
+            p_lines.append(p)
+            app.plots = True
         elif plot['name'] == 'scatter':
-            # Try to convert list to PlotArray
-            #if plot_list.index(plot) != 0:
-            #    p = time_scatter(obj=data_cds[plot['params']], xrange=p.x_range, **p_params)
-            #else:
-            #    p = time_scatter(obj=data_cds[plot['params']], **p_params)
-            #p = scatter(data_cds, title=f'Figure example {NAME_DEMO}',
-            #            xvar='clear_sky_direct_solar_radiation_at_surface',
-            #            yvar='2m_temperature', **sc_param)
             c = scatter(data_cds, title=f'Scatter',
                         xvar=plot['params'].split(',')[0].strip(),
                         yvar=plot['params'].split(',')[1].strip(), **sc_param)
-            # Show scatter
-            app.scatterHtml = file_html(c, CDN, "scatter")
-            #output_file(f"Scatter_cds_{userid}.html")
-            #save(c)
+            app.scatter = True
+        elif plot['name'] == 'xpan':
+            app.xpan = plot['params']
 
-    xpan = time_range_tool(obj=data_cds, yvar=data_cds.columns[0],
-                           xrange=p.x_range, width=p_params['width'])
-    # Show plots
-    #output_file(f"TimeLines_cds_{userid}.html")
-    #save(layout([layout(p_lines), xpan]))
-    app.plotsHtml = file_html(layout([layout(p_lines), xpan]), CDN, "plots")
+    if app.plots and app.xpan:
+        xpan = time_range_tool(obj=data_cds, yvar=data_cds.columns[0],
+                               xrange=p.x_range, width=p_params['width'])
+
+    print(app.plots)
+    print(app.xpan)
+    print(app.scatter)
+    # Visualization
+    if app.plots:
+        if app.scatter:
+            if app.xpan:
+                app.plotsHtml = file_html(layout([layout(p_lines), xpan, c]), CDN, "Dashboards")
+            else:
+                app.plotsHtml = file_html(layout([layout(p_lines), c]), CDN, "Dashboards")
+        else:
+            if app.xpan:
+                app.plotsHtml = file_html(layout([layout(p_lines), xpan]), CDN, "Dashboards")
+            else:
+                app.plotsHtml = file_html(layout(p_lines), CDN, "Dashboards")
+    else:
+        if app.scatter:
+            app.plotsHtml = file_html(c, CDN, "Dashboards")
+
 
 @app.get("/showPlot")
-async def showplot(request: Request):
-    return HTMLResponse(content=app.plotsHtml, status_code=200)
+async def showplot():
+    html = app.plotsHtml
+    app.plotsHtml = None
+    return HTMLResponse(content=html, status_code=200)
 
-@app.get("/showScatter")
-async def showscatter():
-    #try:
-        #return templates.TemplateResponse('Scatter_cds_'+str(userid)+'.html', context={'request': request})
-    return HTMLResponse(content=app.scatterHtml, status_code=200)
-    #except TemplateNotFound:
-    #    print
-    #    'TemplateNotFound error in showScatter'
-    #    return 'Scatter Not Found'
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

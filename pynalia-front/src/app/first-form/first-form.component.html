@@ -1,4 +1,10 @@
 <hr>
+        <input #saveXpan
+          id="saveXpan"
+          type="checkbox"
+          [checked]="xpanBool"
+          (change)="onSaveXpanChanged(saveXpan.checked)" />Time Range
+        <br><br>
         <label>Select your dashboard </label>
         <ng-select [items]="dashboards"
                    bindLabel="name"
@@ -7,46 +13,35 @@
                    [(ngModel)]="selectedDashboard">
 
         </ng-select>
+        <br>
+        <input #column type="text" name="">
+        <hr>
+        <button class="btn btn-warning" (click)="addDashboard(column.value)">Add Dashboard</button>
 
-
-        <div [ngSwitch]="selectedDashboard">
-          <div *ngSwitchCase="'lines'">
-            <hr>
-            <p>Pickle column name</p>
-            <input #column type="text" name="">
-            <hr>
-            <button class="btn btn-danger" (click)="onAddDashboard(column.value)">Add TimeLines</button>
-          </div>
-          <div *ngSwitchCase="'dots'">
-            <hr>
-            <p>Pickle column name</p>
-            <input #column type="text" name="">
-            <hr>
-            <button class="btn btn-danger" (click)="onAddDashboard(column.value)">Add Dots</button>
-          </div>
-          <div *ngSwitchCase="'scatter'">
-            <hr>
-            <p>Pickle column name</p>
-            <input #column type="text" name="">
-            <hr>
-            <button class="btn btn-danger" (click)="onAddDashboard(column.value)">Add Scatter</button>
-          </div>
-          <div *ngSwitchDefault="'lines'">
-          </div>
-        </div>
-
-        <input #saveXpan
-            id="saveXpan"
-            type="checkbox"
-            [checked]="xpanBool"
-            (change)="onSaveXpanChanged(saveXpan.checked)" />Xpan
 
         <hr>
-        <div *ngFor="let dashboard of selectedDashboards">
-          <p>{{dashboard.name}} / {{dashboard.params}}</p>
-        </div>
-        <button class="btn" (click)="generate()">Generate</button>
 
+        <h2>List of dashboard</h2>
+        <table class="table table-condensed">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Params</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let dashboard of selectedDashboards; let i = index">
+                    <th>{{i}}</th>
+                    <td>{{dashboard.name}}</td>
+                    <td>{{dashboard.params}}</td>
+                    <td>
+                        <button class="btn btn-danger" (click)="deleteDashboard(i)">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button class="btn btn-warning" (click)="generate()">Generate</button>
         <div *ngIf="showPlot">
                 <iframe frameborder="0"
                 scrolling="no"
@@ -54,11 +49,5 @@
                 src="http://localhost:8000/showPlot"></iframe>
         </div>
 
-        <div *ngIf="showPlot">
-                <iframe frameborder="0"
-                scrolling="no"
-                style="overflow:hidden;height:1000px;width:100%"
-                src="http://localhost:8000/showScatter"></iframe>
-        </div>
 
 
