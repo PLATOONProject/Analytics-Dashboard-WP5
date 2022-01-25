@@ -74,7 +74,7 @@ async def generate(plot_list: List):
                 p = time_lines(obj=data_cds[plot['params']], **p_params)
             p_lines.append(p)
             app.plots = True
-        elif plot['name'] == 'timescatter':
+        elif plot['name'] == 'dots':
             if plot_list.index(plot) != 0:
                 p = time_scatter(obj=data_cds[plot['params']], xrange=p.x_range, **p_params)
             else:

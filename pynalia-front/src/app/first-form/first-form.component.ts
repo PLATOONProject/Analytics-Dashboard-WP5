@@ -12,7 +12,7 @@ export class FirstFormComponent implements OnInit{
 
     dashboards = [
         {id: 1, value:"lines", name: 'Time Lines'},
-        {id: 2, value:"timescatter", name: 'Time Scatter'},
+        {id: 2, value:"dots", name: 'Time Dots'},
         //{id: 2, value:"bars", name: 'Time Bars'},
         {id: 3, value:"scatter", name: 'Scatter'}
     ];
