@@ -50,7 +50,7 @@ async def generate(plot_list: List):
     #             Plot('time_lines', 'clear_sky_direct_solar_radiation_at_surface')]
     # get data from CDS
     try:
-        # data_cds = read_pickle("./code/meteo_cds.pkl")
+        #data_cds = read_pickle("./code/meteo_cds.pkl")
         data_cds = read_pickle("meteo_cds.pkl")
         data_cds = data_cds.dropna()
     except FileNotFoundError:

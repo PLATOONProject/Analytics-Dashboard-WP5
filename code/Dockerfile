@@ -8,9 +8,9 @@ RUN pip install --upgrade pip
 
 WORKDIR /code/
 # Install dependencies
-COPY ./code /code
-COPY ./requirements.txt /code/requirements.txt
+COPY code/ ./
+COPY requirements.txt ./
 RUN pip install -r requirements.txt
 
 EXPOSE 8000
-CMD ["python", "code/main.py"]
+CMD ["python", "main.py"]

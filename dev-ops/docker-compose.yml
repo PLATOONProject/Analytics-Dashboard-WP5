@@ -3,8 +3,14 @@ services:
   api:
     build:
       context: ..
-      dockerfile: dev-ops/Dockerfile
-    volumes:
-      - ..:/code
+      dockerfile: code/Dockerfile
     ports:
       - "8000:8000"
+    image: pynalia_api
+  front:
+    build:
+      context: ..
+      dockerfile: pynalia-front/Dockerfile
+    ports:
+      - "4200:4200"
+    image: pynalia_front
