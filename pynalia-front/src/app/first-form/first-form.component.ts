@@ -17,6 +17,7 @@ export class FirstFormComponent implements OnInit{
         {id: 3, value:"scatter", name: 'Scatter'}
     ];
 
+    file_path;
     selectedDashboard;
     selectedDashboards = [];
     selectedDashboardsXpan = [];
@@ -51,10 +52,9 @@ export class FirstFormComponent implements OnInit{
          name: "xpan",
          params: this.xpanBool
       };
-      //this.selectedDashboardsXpan = { ...this.selectedDashboards };
       this.selectedDashboardsXpan = Object.assign([], this.selectedDashboards);
       this.selectedDashboardsXpan.push(xpan);
-      this.apiService.generatePlots(this.selectedDashboardsXpan)
+      this.apiService.generatePlots(this.file_path, this.selectedDashboardsXpan)
       .subscribe(
          data => {
             this.innerHtml = data;

@@ -1,17 +1,18 @@
 from typing import List
 
 import uvicorn
+import pandas as pd
 
 from bokeh.embed import file_html
 from bokeh.layouts import layout
 from bokeh.resources import CDN
-from fastapi import FastAPI, Request
+from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
-from pandas import read_pickle
 from fastapi.responses import HTMLResponse
+from pydantic import BaseModel
 
-from plots import time_lines, time_range_tool, time_lines_and_dots, scatter, time_scatter, time_bars
+from plots import time_lines, time_range_tool, scatter, time_scatter, time_bars
 
 app = FastAPI()
 origins = [
@@ -33,25 +34,25 @@ app.scatter = False
 app.plots = False
 
 
-# Python3 code here for creating class
-class Plot:
-    def __init__(self, name, params):
-        self.name = name
-        self.params = params
+class Dashboard(BaseModel):
+    name: str
+    params: str
+
+
+class Dashboards(BaseModel):
+    file_path: str
+    selectedDashboards: List[Dashboard]
 
 
 @app.post("/generate")
-async def generate(plot_list: List):
+async def generate(dashboards: Dashboards):
     # We need list with selected plots with their parameters
     print(f'Starting post')
-    # print(plots)
-    # plot_list = [Plot(*plot) for plot in plots]
-    # plot_list = [Plot('time_lines', '2m_temperature'), Plot('time_lines', 'snowfall'),
-    #             Plot('time_lines', 'clear_sky_direct_solar_radiation_at_surface')]
-    # get data from CDS
     try:
-        #data_cds = read_pickle("./code/meteo_cds.pkl")
-        data_cds = read_pickle("meteo_cds.pkl")
+        # data_cds = read_pickle("/home/zarateadm/git/meteo_cds.pkl")
+        # data_cds = read_pickle("meteo_cds.pkl")
+        # data_cds = pd.read_json(file_path)
+        data_cds = pd.read_json(dashboards.file_path)
         data_cds = data_cds.dropna()
     except FileNotFoundError:
         print(f'File does not exist. ')
@@ -63,38 +64,39 @@ async def generate(plot_list: List):
                     get_regression=False, hoover=True)
     app.scatter = False
     app.plots = False
+    plot_list = dashboards.selectedDashboards
 
     for plot in plot_list:
         print(plot)
         #  Try to convert list to PlotArray
-        if plot['name'] == 'lines':
+        if plot.name == 'lines':
             if plot_list.index(plot) != 0:
-                p = time_lines(obj=data_cds[plot['params']], xrange=p.x_range, **p_params)
+                p = time_lines(obj=data_cds[plot.params], xrange=p.x_range, **p_params)
             else:
-                p = time_lines(obj=data_cds[plot['params']], **p_params)
+                p = time_lines(obj=data_cds[plot.params], **p_params)
             p_lines.append(p)
             app.plots = True
-        elif plot['name'] == 'dots':
+        elif plot.name == 'dots':
             if plot_list.index(plot) != 0:
-                p = time_scatter(obj=data_cds[plot['params']], xrange=p.x_range, **p_params)
+                p = time_scatter(obj=data_cds[plot.params], xrange=p.x_range, **p_params)
             else:
-                p = time_scatter(obj=data_cds[plot['params']], **p_params)
+                p = time_scatter(obj=data_cds[plot.params], **p_params)
             p_lines.append(p)
             app.plots = True
-        elif plot['name'] == 'bars':
+        elif plot.name == 'bars':
             if plot_list.index(plot) != 0:
-                p = time_bars(obj=data_cds[plot['params']], xrange=p.x_range, **p_params)
+                p = time_bars(obj=data_cds[plot.params], xrange=p.x_range, **p_params)
             else:
-                p = time_bars(obj=data_cds[plot['params']], **p_params)
+                p = time_bars(obj=data_cds[plot.params], **p_params)
             p_lines.append(p)
             app.plots = True
-        elif plot['name'] == 'scatter':
+        elif plot.name == 'scatter':
             c = scatter(data_cds, title=f'Scatter',
-                        xvar=plot['params'].split(',')[0].strip(),
-                        yvar=plot['params'].split(',')[1].strip(), **sc_param)
+                        xvar=plot.params.split(',')[0].strip(),
+                        yvar=plot.params.split(',')[1].strip(), **sc_param)
             app.scatter = True
-        elif plot['name'] == 'xpan':
-            app.xpan = plot['params']
+        elif plot.name == 'xpan':
+            app.xpan = str_to_bool(plot.params)
 
     if app.plots and app.xpan:
         xpan = time_range_tool(obj=data_cds, yvar=data_cds.columns[0],
@@ -107,16 +109,21 @@ async def generate(plot_list: List):
     if app.plots:
         if app.scatter:
             if app.xpan:
+                print('1')
                 app.plotsHtml = file_html(layout([layout(p_lines), xpan, c]), CDN, "Dashboards")
             else:
+                print('2')
                 app.plotsHtml = file_html(layout([layout(p_lines), c]), CDN, "Dashboards")
         else:
             if app.xpan:
+                print('3')
                 app.plotsHtml = file_html(layout([layout(p_lines), xpan]), CDN, "Dashboards")
             else:
+                print('4')
                 app.plotsHtml = file_html(layout(p_lines), CDN, "Dashboards")
     else:
         if app.scatter:
+            print('5')
             app.plotsHtml = file_html(c, CDN, "Dashboards")
 
 
@@ -126,6 +133,11 @@ async def showplot():
     app.plotsHtml = None
     return HTMLResponse(content=html, status_code=200)
 
+def str_to_bool(s):
+    if s == 'True':
+         return True
+    elif s == 'False':
+         return False
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)
