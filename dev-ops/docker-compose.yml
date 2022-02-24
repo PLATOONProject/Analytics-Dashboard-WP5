@@ -6,11 +6,31 @@ services:
       dockerfile: code/Dockerfile
     ports:
       - "8000:8000"
-    image: pynalia_api
+    container_name: platoon-pynalia-api
+    hostname: platoon-pynalia-api
+    networks:
+      - frontend
+    volumes:
+      - ../data:/code/data
+      #- pynalia:/code/data
+
   front:
     build:
       context: ..
       dockerfile: pynalia-front/Dockerfile
     ports:
       - "4200:4200"
-    image: pynalia_front
+    container_name: platoon-pynalia-front
+    hostname: platoon-pynalia-front
+    networks:
+      - frontend
+    volumes:
+      - ../data:/app/data
+      #- pynalia:/app/data
+
+volumes:
+  pynalia:
+
+networks:
+  frontend:
+    driver: bridge

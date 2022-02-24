@@ -10,9 +10,10 @@ export class ApiService {
   constructor(private httpClient : HttpClient) { }
 
   generatePlots(file_path_param, selectedDashboards_param){
+
     let httpHeaders = new HttpHeaders({
      'Content-Type' : 'application/json',
-     'Cache-Control': 'no-cache'
+     'Access-Control-Allow-Origin':'*'
     });
     let options = {
          headers: httpHeaders

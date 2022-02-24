@@ -15,18 +15,15 @@ from pydantic import BaseModel
 from plots import time_lines, time_range_tool, scatter, time_scatter, time_bars
 
 app = FastAPI()
-origins = [
-    "http://localhost",
-    "http://localhost:4200",
-]
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 app.templates = Jinja2Templates(directory=".")
 app.plotsHtml = None
 app.xpan = False
@@ -52,6 +49,7 @@ async def generate(dashboards: Dashboards):
         # data_cds = read_pickle("/home/zarateadm/git/meteo_cds.pkl")
         # data_cds = read_pickle("meteo_cds.pkl")
         # data_cds = pd.read_json(file_path)
+        print(dashboards.file_path)
         data_cds = pd.read_json(dashboards.file_path)
         data_cds = data_cds.dropna()
     except FileNotFoundError:

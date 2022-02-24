@@ -5,6 +5,7 @@
 export const environment = {
   production: false,
   title: 'Pynalia Dashboard Generate',
+  // Here we need to know the plattoon domain
   apiURL: 'http://localhost:8000'
 };
 
