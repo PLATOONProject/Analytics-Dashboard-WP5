@@ -1,7 +1,6 @@
-# Git
+# Git - branch: pynaliaFront_V1.0
 ```
 https://git.code.tecnalia.com/DigitalEnergy/platoon/platoon-visualisation-dashboard-wp-5/-/tree/pynaliaFront_V1.0
-branch: pynaliaFront_V1.0
 ```
 
 # Pynalia
