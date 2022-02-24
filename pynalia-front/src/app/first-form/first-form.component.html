@@ -1,0 +1,56 @@
+<hr>
+        <label>Select JSON file </label>
+        <br>
+        <input type="file" class="file-input" (change)="onFileSelected($event)" #fileUpload>
+        <hr>
+        <br><br>
+        <input #saveXpan
+          id="saveXpan"
+          type="checkbox"
+          [checked]="xpanBool"
+          (change)="onSaveXpanChanged(saveXpan.checked)" />Time Range
+        <br><br>
+        <label>Select your dashboard </label>
+        <ng-select [items]="dashboards"
+                   bindLabel="name"
+                   bindValue="value"
+                   placeholder="Select dashboard"
+                   [(ngModel)]="selectedDashboard">
+
+        </ng-select>
+        <br>
+        <input #column type="text" name="">
+        <button class="btn btn-warning" (click)="addDashboard(column.value)">Add Dashboard</button>
+        <br><br>
+        <hr>
+        <br><br>
+        <h2>List of dashboard</h2>
+        <table class="table table-condensed">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Params</th>
+            </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let dashboard of selectedDashboards; let i = index">
+                    <th>{{i}}</th>
+                    <td>{{dashboard.name}}</td>
+                    <td>{{dashboard.params}}</td>
+                    <td>
+                        <button class="btn btn-danger" (click)="deleteDashboard(i)">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+
+        <button class="btn btn-warning" (click)="generate()">Generate</button>
+        <div *ngIf="showPlot">
+                <iframe frameborder="0"
+                scrolling="no"
+                style="overflow:hidden;height:2500px;width:100%"
+                src="http://localhost:8000/showPlot"></iframe>
+        </div>
+
+
+
