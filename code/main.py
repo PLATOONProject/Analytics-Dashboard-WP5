@@ -6,12 +6,12 @@ import pandas as pd
 from bokeh.embed import file_html
 from bokeh.layouts import layout
 from bokeh.resources import CDN
-from fastapi import FastAPI
+from fastapi import FastAPI, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-
+from io import StringIO
 from plots import time_lines, time_range_tool, scatter, time_scatter, time_bars
 
 app = FastAPI()
@@ -29,7 +29,7 @@ app.plotsHtml = None
 app.xpan = False
 app.scatter = False
 app.plots = False
-
+app.bytes_data = None
 
 class Dashboard(BaseModel):
     name: str
@@ -49,8 +49,12 @@ async def generate(dashboards: Dashboards):
         # data_cds = read_pickle("/home/zarateadm/git/meteo_cds.pkl")
         # data_cds = read_pickle("meteo_cds.pkl")
         # data_cds = pd.read_json(file_path)
-        print(dashboards.file_path)
-        data_cds = pd.read_json(dashboards.file_path)
+        #print(dashboards.file_path)
+        #data_cds = pd.read_json(dashboards.file_path)
+        print(app.bytes_data)
+        s = str(app.bytes_data, 'utf-8')
+        data = StringIO(s)
+        data_cds = pd.read_json(data)
         data_cds = data_cds.dropna()
     except FileNotFoundError:
         print(f'File does not exist. ')
@@ -124,6 +128,10 @@ async def generate(dashboards: Dashboards):
             print('5')
             app.plotsHtml = file_html(c, CDN, "Dashboards")
 
+@app.post("/thumbnail-upload")
+def create_file(thumbnail: UploadFile = File(...)):
+    app.bytes_data = thumbnail.file.read()
+    return {"file_size": len(thumbnail.file.read())}
 
 @app.get("/showPlot")
 async def showplot():

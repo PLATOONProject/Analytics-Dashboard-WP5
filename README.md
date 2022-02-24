@@ -1,6 +1,8 @@
 # Git
+```
 https://git.code.tecnalia.com/DigitalEnergy/platoon/platoon-visualisation-dashboard-wp-5/-/tree/pynaliaFront_V1.0
 branch: pynaliaFront_V1.0
+```
 
 # Pynalia
 In this project 2 separate modules have been generated. 
@@ -18,8 +20,16 @@ docker-compose -f dev-ops/docker-compose.yml up -d --build
 
 Now we will have 2 dockers upload.
 
-We can see api in http://localhost:8000/docs
-And Pynalia Front End in http://localhost:4200/
+FastApi --> http://localhost:8000/docs
 
-We need to change the comunication between dockers but we dont know if you are using a traeffic
-or something similar
+Front End --> http://localhost:4200/
+
+In the second endpoint you only have to select you json and select the dashboards you want to see.
+In the data folder there are 2 json with which the tests have been carried out.
+We'll need to change the communication between the dockers, but we don't know if you're using a traeffic 
+or something similar. 
+Our frontend communicates with the api thanks to an environment variable found in 
+```
+/pynalia-front/src/environments/environment.ts
+```
+

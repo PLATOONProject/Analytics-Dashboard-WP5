@@ -1,6 +1,8 @@
 <hr>
-        <label>Local file path </label>
-        <input type="text" [(ngModel)]="file_path" name="">
+        <label>Select JSON file </label>
+        <br>
+        <input type="file" class="file-input" (change)="onFileSelected($event)" #fileUpload>
+        <hr>
         <br><br>
         <input #saveXpan
           id="saveXpan"
@@ -18,12 +20,10 @@
         </ng-select>
         <br>
         <input #column type="text" name="">
-        <hr>
         <button class="btn btn-warning" (click)="addDashboard(column.value)">Add Dashboard</button>
-
-
+        <br><br>
         <hr>
-
+        <br><br>
         <h2>List of dashboard</h2>
         <table class="table table-condensed">
             <thead>

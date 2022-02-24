@@ -1,7 +1,8 @@
+import { HttpClient, HttpParams, HttpHeaders } from '@angular/common/http';
 import { Component, OnInit } from '@angular/core';
 import { NgOption } from '@ng-select/ng-select';
-
 import { ApiService } from '../api.service';
+import { environment } from './../../environments/environment';
 
 @Component({
   selector: 'app-first-form',
@@ -17,7 +18,6 @@ export class FirstFormComponent implements OnInit{
         {id: 3, value:"scatter", name: 'Scatter'}
     ];
 
-    file_path;
     selectedDashboard;
     selectedDashboards = [];
     selectedDashboardsXpan = [];
@@ -25,7 +25,7 @@ export class FirstFormComponent implements OnInit{
     showPlot = false;
     xpanBool = false;
 
-    constructor(private apiService: ApiService) {
+    constructor(private apiService: ApiService, private http: HttpClient) {
     }
 
     public onSaveXpanChanged(value:boolean){
@@ -46,6 +46,18 @@ export class FirstFormComponent implements OnInit{
       this.selectedDashboards.splice(index, 1);
       this.showPlot = false;
     }
+
+    onFileSelected(event) {
+        const file:File = event.target.files[0];
+        if (file) {
+            const formData = new FormData();
+            formData.append("thumbnail", file);
+            const upload$ = this.http.post(environment.apiURL+ "/thumbnail-upload", formData);
+            upload$.subscribe();
+        }
+        this.showPlot = false;
+    }
+
     public generate(){
       console.log("generating")
       var xpan = {
@@ -54,16 +66,16 @@ export class FirstFormComponent implements OnInit{
       };
       this.selectedDashboardsXpan = Object.assign([], this.selectedDashboards);
       this.selectedDashboardsXpan.push(xpan);
-      this.apiService.generatePlots(this.file_path, this.selectedDashboardsXpan)
+      this.apiService.generatePlots(this.selectedDashboardsXpan)
       .subscribe(
          data => {
             this.innerHtml = data;
          },
          error => console.log('There is no plot generated', + error));
-
       this.showPlot = true;
       console.log("generated")
     }
+
 
 
     ngOnInit(){
