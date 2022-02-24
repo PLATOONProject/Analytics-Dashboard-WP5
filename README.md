@@ -33,3 +33,69 @@ Our frontend communicates with the api thanks to an environment variable found i
 /pynalia-front/src/environments/environment.ts
 ```
 
+Here I leave a schema of how the received json should be
+
+```
+{
+"$schema": "http://json-schema.org/draft-04/schema#",
+"type": "object",
+"properties": {
+"column_name1": {
+"type": "object",
+"properties": {
+"1498867200000": {
+"type": "number"
+},
+"1498870800000": {
+"type": "number"
+},
+............
+},
+"required": [
+"1498867200000",
+"1498870800000",
+............
+]
+},
+"column_name2": {
+"type": "object",
+"properties": {
+"1498867200000": {
+"type": "number"
+},
+"1498870800000": {
+"type": "number"
+},
+............
+},
+"required": [
+"1498867200000",
+"1498870800000",
+............
+]
+},
+"column_name3": {
+"type": "object",
+"properties": {
+"1498867200000": {
+"type": "number"
+},
+"1498870800000": {
+"type": "number"
+},
+............
+},
+"required": [
+"1498867200000",
+"1498870800000",
+............
+]
+}
+},
+"required": [
+"column_name1",
+"column_name2",
+"column_name3"
+]
+}
+```
