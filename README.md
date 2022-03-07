@@ -98,3 +98,23 @@ Here I leave a schema of how the received json should be
 ]
 }
 ```
+An example of the JSON file is shown below:
+{
+    "Variable1": {
+        "TimeStamp": Value,
+        " TimeStamp": Value,
+        " TimeStamp ": Value,
+    },
+    " Variable2": {
+        "TimeStamp": Value,
+        "TimeStamp": Value,
+        "TimeStamp ": Value
+    },
+    " VariableN": {
+        "TimeStamp": Value,
+        "TimeStamp": Value,
+        "TimeStamp ": Value
+    }
+}
+
+In addition, a sample JSON file can be found in the "data" folder.
