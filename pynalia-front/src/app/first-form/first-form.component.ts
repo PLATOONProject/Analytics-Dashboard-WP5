@@ -18,6 +18,7 @@ export class FirstFormComponent implements OnInit{
         {id: 3, value:"scatter", name: 'Scatter'}
     ];
 
+    file_path;
     selectedDashboard;
     selectedDashboards = [];
     selectedDashboardsXpan = [];
@@ -47,7 +48,7 @@ export class FirstFormComponent implements OnInit{
       this.showPlot = false;
     }
 
-    onFileSelected(event) {
+    /*onFileSelected(event) {
         const file:File = event.target.files[0];
         if (file) {
             const formData = new FormData();
@@ -56,7 +57,7 @@ export class FirstFormComponent implements OnInit{
             upload$.subscribe();
         }
         this.showPlot = false;
-    }
+    }*/
 
     public generate(){
       console.log("generating")
@@ -66,7 +67,7 @@ export class FirstFormComponent implements OnInit{
       };
       this.selectedDashboardsXpan = Object.assign([], this.selectedDashboards);
       this.selectedDashboardsXpan.push(xpan);
-      this.apiService.generatePlots(this.selectedDashboardsXpan)
+      this.apiService.generatePlots(this.file_path, this.selectedDashboardsXpan)
       .subscribe(
          data => {
             this.innerHtml = data;

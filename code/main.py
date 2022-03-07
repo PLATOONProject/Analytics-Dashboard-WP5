@@ -2,7 +2,7 @@ from typing import List
 
 import uvicorn
 import pandas as pd
-
+from urllib.request import urlopen
 from bokeh.embed import file_html
 from bokeh.layouts import layout
 from bokeh.resources import CDN
@@ -11,7 +11,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-from io import StringIO
 from plots import time_lines, time_range_tool, scatter, time_scatter, time_bars
 
 app = FastAPI()
@@ -49,12 +48,22 @@ async def generate(dashboards: Dashboards):
         # data_cds = read_pickle("/home/zarateadm/git/meteo_cds.pkl")
         # data_cds = read_pickle("meteo_cds.pkl")
         # data_cds = pd.read_json(file_path)
-        #print(dashboards.file_path)
-        #data_cds = pd.read_json(dashboards.file_path)
-        print(app.bytes_data)
-        s = str(app.bytes_data, 'utf-8')
-        data = StringIO(s)
-        data_cds = pd.read_json(data)
+        # data_cds = pd.read_json(dashboards.file_path)
+
+        # With thumbnail
+        #print(app.bytes_data)
+        #s = str(app.bytes_data, 'utf-8')
+        #data = StringIO(s)
+        #data_cds = pd.read_json(data)
+
+        print(dashboards.file_path)
+        # store the response of URL
+        response = urlopen(dashboards.file_path)
+
+        # storing the JSON response
+        # from url in data
+        data_cds = pd.read_json(response)
+        #data_json = json.loads(response.read())
         data_cds = data_cds.dropna()
     except FileNotFoundError:
         print(f'File does not exist. ')

@@ -1,7 +1,10 @@
 <hr>
-        <label>Select JSON file </label>
+        <label>Select JSON url </label>
         <br>
-        <input type="file" class="file-input" (change)="onFileSelected($event)" #fileUpload>
+        <!--input type="file" class="file-input" (change)="onFileSelected($event)" #fileUpload-->
+        <input type="text" [(ngModel)]="file_path" name="">
+        <br><br>
+
         <hr>
         <br><br>
         <input #saveXpan
