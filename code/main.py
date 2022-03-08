@@ -7,21 +7,24 @@ from bokeh.embed import file_html
 from bokeh.layouts import layout
 from bokeh.resources import CDN
 from fastapi import FastAPI, File, UploadFile
-from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware import Middleware
+from starlette.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from plots import time_lines, time_range_tool, scatter, time_scatter, time_bars
 
-app = FastAPI()
+middleware = [
+    Middleware(
+        CORSMiddleware,
+        allow_origins=['*'],
+        allow_credentials=True,
+        allow_methods=['*'],
+        allow_headers=['*']
+    )
+]
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+app = FastAPI(middleware=middleware)
 
 app.templates = Jinja2Templates(directory=".")
 app.plotsHtml = None
@@ -147,6 +150,7 @@ async def showplot():
     html = app.plotsHtml
     app.plotsHtml = None
     return HTMLResponse(content=html, status_code=200)
+
 
 def str_to_bool(s):
     if s == 'True':
