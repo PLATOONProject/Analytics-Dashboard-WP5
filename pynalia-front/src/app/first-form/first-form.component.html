@@ -13,21 +13,21 @@
           [checked]="xpanBool"
           (change)="onSaveXpanChanged(saveXpan.checked)" />Time Range
         <br><br>
-        <label>Select your dashboard </label>
+        <label>Select your plot </label>
         <ng-select [items]="dashboards"
                    bindLabel="name"
                    bindValue="value"
-                   placeholder="Select dashboard"
+                   placeholder="Select plot"
                    [(ngModel)]="selectedDashboard">
 
         </ng-select>
         <br>
         <input #column type="text" name="">
-        <button class="btn btn-warning" (click)="addDashboard(column.value)">Add Dashboard</button>
+        <button class="btn btn-warning" (click)="addDashboard(column.value)">Add Plot</button>
         <br><br>
         <hr>
         <br><br>
-        <h2>List of dashboard</h2>
+        <h2>List of plots</h2>
         <table class="table table-condensed">
             <thead>
             <tr>

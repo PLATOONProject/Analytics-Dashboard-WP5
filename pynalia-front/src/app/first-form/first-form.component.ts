@@ -12,10 +12,12 @@ import { environment } from './../../environments/environment';
 export class FirstFormComponent implements OnInit{
 
     dashboards = [
-        {id: 1, value:"lines", name: 'Time Lines'},
-        {id: 2, value:"dots", name: 'Time Dots'},
-        //{id: 2, value:"bars", name: 'Time Bars'},
-        {id: 3, value:"scatter", name: 'Scatter'}
+        {id: 1, value:"lines", name: 'Time Lines - 1 Column'},
+        {id: 2, value:"dots", name: 'Time Dots - 1 Column'},
+        {id: 3, value:"bars", name: 'Time Bars - 1 Column'},
+        {id: 4, value:"correlation", name: 'Correlation - 0 Column'},
+        {id: 5, value:"scatter", name: 'Scatter - 2 Columns'},
+        {id: 6, value:"histogram", name: 'Histogram - 0 Column'}
     ];
 
     file_path;

@@ -12,7 +12,7 @@ from starlette.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-from plots import time_lines, time_range_tool, scatter, time_scatter, time_bars
+from plots import time_lines, time_range_tool, scatter, time_scatter, time_bars, histograms, correlation
 
 middleware = [
     Middleware(
@@ -30,8 +30,12 @@ app.templates = Jinja2Templates(directory=".")
 app.plotsHtml = None
 app.xpan = False
 app.scatter = False
+app.correlation = False
+app. histogram = False
 app.plots = False
 app.bytes_data = None
+app.firstPlotWithXRange = False
+
 
 class Dashboard(BaseModel):
     name: str
@@ -54,19 +58,19 @@ async def generate(dashboards: Dashboards):
         # data_cds = pd.read_json(dashboards.file_path)
 
         # With thumbnail
-        #print(app.bytes_data)
-        #s = str(app.bytes_data, 'utf-8')
-        #data = StringIO(s)
-        #data_cds = pd.read_json(data)
+        # print(app.bytes_data)
+        # s = str(app.bytes_data, 'utf-8')
+        # data = StringIO(s)
+        # data_cds = pd.read_json(data)
 
         print(dashboards.file_path)
         # store the response of URL
         response = urlopen(dashboards.file_path)
 
         # storing the JSON response
-        # from url in data
+        # from url in data. Default return DataFrame
         data_cds = pd.read_json(response)
-        #data_json = json.loads(response.read())
+        # Remove missing values.
         data_cds = data_cds.dropna()
     except FileNotFoundError:
         print(f'File does not exist. ')
@@ -76,36 +80,47 @@ async def generate(dashboards: Dashboards):
     p_params = dict(width=1200, height=250)
     sc_param = dict(size=5, width=700, height=700, hist_axes=True,
                     get_regression=False, hoover=True)
+    app.correlation = False
     app.scatter = False
+    app.histogram = False
     app.plots = False
+    app.firstPlotWithXRange = False
     plot_list = dashboards.selectedDashboards
 
     for plot in plot_list:
-        print(plot)
         #  Try to convert list to PlotArray
         if plot.name == 'lines':
-            if plot_list.index(plot) != 0:
+            if app.firstPlotWithXRange:
                 p = time_lines(obj=data_cds[plot.params], xrange=p.x_range, **p_params)
             else:
                 p = time_lines(obj=data_cds[plot.params], **p_params)
+                app.firstPlotWithXRange = True
             p_lines.append(p)
             app.plots = True
         elif plot.name == 'dots':
-            if plot_list.index(plot) != 0:
+            if app.firstPlotWithXRange:
                 p = time_scatter(obj=data_cds[plot.params], xrange=p.x_range, **p_params)
             else:
                 p = time_scatter(obj=data_cds[plot.params], **p_params)
+                app.firstPlotWithXRange = True
             p_lines.append(p)
             app.plots = True
         elif plot.name == 'bars':
-            if plot_list.index(plot) != 0:
-                p = time_bars(obj=data_cds[plot.params], xrange=p.x_range, **p_params)
+            if app.firstPlotWithXRange:
+                p = time_bars(obj=data_cds, yvar=[plot.params], xrange=p.x_range, **p_params)
             else:
-                p = time_bars(obj=data_cds[plot.params], **p_params)
+                p = time_bars(obj=data_cds, yvar=[plot.params], **p_params)
+                app.firstPlotWithXRange = True
             p_lines.append(p)
             app.plots = True
+        elif plot.name == 'correlation':
+            c = correlation(obj=data_cds, **p_params)
+            app.correlation = True
+        elif plot.name == 'histogram':
+            h = histograms(obj=data_cds, **p_params, title='histogram')
+            app.histogram = True
         elif plot.name == 'scatter':
-            c = scatter(data_cds, title=f'Scatter',
+            s = scatter(data_cds, title=f'Scatter',
                         xvar=plot.params.split(',')[0].strip(),
                         yvar=plot.params.split(',')[1].strip(), **sc_param)
             app.scatter = True
@@ -116,34 +131,67 @@ async def generate(dashboards: Dashboards):
         xpan = time_range_tool(obj=data_cds, yvar=data_cds.columns[0],
                                xrange=p.x_range, width=p_params['width'])
 
-    print(app.plots)
-    print(app.xpan)
-    print(app.scatter)
     # Visualization
-    if app.plots:
-        if app.scatter:
-            if app.xpan:
-                print('1')
-                app.plotsHtml = file_html(layout([layout(p_lines), xpan, c]), CDN, "Dashboards")
-            else:
-                print('2')
-                app.plotsHtml = file_html(layout([layout(p_lines), c]), CDN, "Dashboards")
+    if app.plots and app.scatter and app.correlation and app.histogram:
+        if app.xpan:
+            app.plotsHtml = file_html(layout([layout(p_lines), xpan, c, s, h]), CDN, "Dashboards")
         else:
-            if app.xpan:
-                print('3')
-                app.plotsHtml = file_html(layout([layout(p_lines), xpan]), CDN, "Dashboards")
-            else:
-                print('4')
-                app.plotsHtml = file_html(layout(p_lines), CDN, "Dashboards")
-    else:
-        if app.scatter:
-            print('5')
-            app.plotsHtml = file_html(c, CDN, "Dashboards")
+            app.plotsHtml = file_html(layout([layout(p_lines), c, s, h]), CDN, "Dashboards")
+    elif app.plots and app.scatter and app.correlation:
+        if app.xpan:
+            app.plotsHtml = file_html(layout([layout(p_lines), xpan, c, s]), CDN, "Dashboards")
+        else:
+            app.plotsHtml = file_html(layout([layout(p_lines), c, s]), CDN, "Dashboards")
+    elif app.plots and app.scatter and app.histogram:
+        if app.xpan:
+            app.plotsHtml = file_html(layout([layout(p_lines), xpan, s, h]), CDN, "Dashboards")
+        else:
+            app.plotsHtml = file_html(layout([layout(p_lines), s, h]), CDN, "Dashboards")
+    elif app.plots and app.scatter:
+        if app.xpan:
+            app.plotsHtml = file_html(layout([layout(p_lines), xpan, s]), CDN, "Dashboards")
+        else:
+            app.plotsHtml = file_html(layout([layout(p_lines), s]), CDN, "Dashboards")
+    elif app.plots and app.correlation and app.histogram:
+        if app.xpan:
+            app.plotsHtml = file_html(layout([layout(p_lines), xpan, c, h]), CDN, "Dashboards")
+        else:
+            app.plotsHtml = file_html(layout([layout(p_lines), c, h]), CDN, "Dashboards")
+    elif app.plots and app.correlation:
+        if app.xpan:
+            app.plotsHtml = file_html(layout([layout(p_lines), xpan, c]), CDN, "Dashboards")
+        else:
+            app.plotsHtml = file_html(layout([layout(p_lines), c]), CDN, "Dashboards")
+    elif app.plots and app.histogram:
+        if app.xpan:
+            app.plotsHtml = file_html(layout([layout(p_lines), xpan, h]), CDN, "Dashboards")
+        else:
+            app.plotsHtml = file_html(layout([layout(p_lines), h]), CDN, "Dashboards")
+    elif app.plots:
+        if app.xpan:
+            app.plotsHtml = file_html(layout([layout(p_lines), xpan]), CDN, "Dashboards")
+        else:
+            app.plotsHtml = file_html(layout(p_lines), CDN, "Dashboards")
+    elif app.scatter and app.correlation and app.histogram:
+        app.plotsHtml = file_html(c, s, h, CDN, "Dashboards")
+    elif app.scatter and app.correlation:
+        app.plotsHtml = file_html(c, s, CDN, "Dashboards")
+    elif app.scatter and app.histogram:
+        app.plotsHtml = file_html(s, h, CDN, "Dashboards")
+    elif app.correlation and app.histogram:
+        app.plotsHtml = file_html(c, h, CDN, "Dashboards")
+    elif app.scatter:
+        app.plotsHtml = file_html(s, CDN, "Dashboards")
+    elif app.histogram:
+        app.plotsHtml = file_html(h, CDN, "Dashboards")
+    elif app.correlation:
+        app.plotsHtml = file_html(c, CDN, "Dashboards")
 
 @app.post("/thumbnail-upload")
 def create_file(thumbnail: UploadFile = File(...)):
     app.bytes_data = thumbnail.file.read()
     return {"file_size": len(thumbnail.file.read())}
+
 
 @app.get("/showPlot")
 async def showplot():
@@ -154,9 +202,10 @@ async def showplot():
 
 def str_to_bool(s):
     if s == 'True':
-         return True
+        return True
     elif s == 'False':
-         return False
+        return False
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="0.0.0.0", port=8000)

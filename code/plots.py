@@ -1,5 +1,5 @@
 # plots.py
-
+import numpy as np
 from bokeh.layouts import layout
 from bokeh.models import (Range1d, ColumnDataSource, RangeTool,
                           LinearColorMapper, BasicTicker,
@@ -436,19 +436,22 @@ def histograms(obj: Union[DataFrame, Series],
     :author: miguel.esteras@tecnalia.com
     """
     logger = getLogger(__name__)
+    #obj[obj.select_dtypes(np.float64).columns] = obj.select_dtypes(np.float64).astype(np.float32)
     groups = obj[groupby] if groupby else None
     source = obj.drop(groupby, axis=1) if groupby else obj.copy()
-    source = source.select_dtypes(include=['bool', 'float'])
-    if source.shape[1] > 1:
-        list_of_plots = [histograms(source[col], title=col,
-                                    width=width or 300,
-                                    height=height or 200,
-                                    hoover=hoover,
-                                    groupby=groups,
-                                    color=color, bins=bins)
-                         for col in source]
-        n = kwargs.pop('n_columns', None) or min([3, source.shape[1]])
-        return plots_to_grid(plots=list_of_plots, n_columns=n)
+    # If typ= frame or Series
+    if isinstance(source, DataFrame):
+        source = source.select_dtypes(include='number')
+        if source.shape[1] > 1:
+            list_of_plots = [histograms(source[col], title=col,
+                                        width=width or 300,
+                                        height=height or 200,
+                                        hoover=hoover,
+                                        groupby=groups,
+                                        color=color, bins=bins)
+                             for col in source]
+            n = kwargs.pop('n_columns', None) or min([3, source.shape[1]])
+            return plots_to_grid(plots=list_of_plots, n_columns=n)
 
     title = title or obj.name or ''
 
@@ -958,7 +961,7 @@ def time_bars(obj: Union[DataFrame, Series], yvar: Union[str, List[str]],
             source = df.rename(columns={col: 'y'})
             if source['y'].empty or source['y'].isnull().all():
                 continue
-            gly = p.vbar(x=xvar, top=col, width=bar_width, source=source,
+            gly = p.vbar(x=xvar, top='y', width=bar_width, source=source,
                          legend_label=str(col),
                          fill_color=color or c, line_color=color or c)
             if hoover:
