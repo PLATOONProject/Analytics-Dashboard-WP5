@@ -1,38 +1,89 @@
-# Git - branch: pynaliaFront_V1.0
-```
-https://git.code.tecnalia.com/DigitalEnergy/platoon/platoon-visualisation-dashboard-wp-5/-/tree/pynaliaFront_V1.0
-```
 
-# Pynalia
-In this project 2 separate modules have been generated. 
-On the one hand a Python API to wrap the Pynalia code and 
-on the other a front-end to interact with said API
+# PLATOON Batch Data Visualisation Dashboard
 
-Each module has its Dockerfile and later inside the dev-ops folder 
-there is a docker-compose for the integration of both 
+Open-source dashboard that provides a collection of reusable  templates for batch data visualisation that can be easily integrated into customer-oriented cloud-based dashboard for predictive analytics and insights analysis. 
+Tis tool has been funded by the PLATOON H2020 project funded by the EU commission.
 
-To execute this project we will launch said docker-compose with the instruction
+## 1. Purpose
 
-```
-docker-compose -f dev-ops/docker-compose.yml up -d --build
-```
+The Visualisation Dashbord is coded in Python and Angular and makes use of existing open source libraries .
+The visualisation dashboard includes different type of charts based on the Generic Visualisation Toolbox developed in task T4.6. 
+The target user of the tool are energy experts with high domain knowledge but low coding skills. Thus, an intuitive and simple Graphical User Interface (GUI) has been defined in order to configure and visualize the dashboards.  
 
-Now we will have 2 dockers upload.
 
-FastApi --> http://localhost:8000/docs
+## 2. Software and Hardware prerequisites
 
-Front End --> http://localhost:4200/
+Being a web application, we have to take into account that the requirements are divided into client and server.
+On the client side, the requirements are those set by the angular itself. Angular supports most recent browsers. This includes the following specific versions:
 
-In the second endpoint you only have to select you json and select the dashboards you want to see.
-In the data folder there are 2 json with which the tests have been carried out.
-We'll need to change the communication between the dockers, but we don't know if you're using a traeffic 
-or something similar. 
-Our frontend communicates with the api thanks to an environment variable found in 
+Browser Supported versions:
+Chrome	latest
+Firefox	latest and extended support release (ESR)
+Edge	2 most recent major versions
+Safari	2 most recent major versions
+iOS	2 most recent major versions
+Android	2 most recent major versions
+
+In the server part, everything will be deployed in Docker Swarm, with which the requirements part is delegated to it. Docker Swarm is an orchestration management tool that runs on Docker applications. It helps end-users in creating and deploying a cluster of Docker nodes. Each node of a Docker Swarm is a Docker daemon, and all Docker daemons interact using the Docker API.
+
+Regarding the hardware requirements:
+•	Minimum hardware: 4 core / 8 GB RAM / 200 GB hard disk for three nodes.
+•	Recommended hardware: 8 core / 16 GB RAM / 200 GB hard disk for three nodes.
+•	Optional hardware: 8 core+ / 16 GB RAM+ / 200 GB+ hard disk for six nodes.
+
+
+## 3. Repository Structure
+
+The developed dashboard is formed of 3 main components:
+1.	Generic Visualisation Tools
+2.	API service
+3.	Graphical User interface.
+All the different components have been integrated into separate dockers. A FAST API service has been built on top to allow Graphical User Interface to interact with the Generic Visualization Tools.  This provides the required elasticity and flexibility to customize different type of dashboards and be able to scale them according to the user needs.
+
+2 separate modules have been generated. On the one hand, a module containing the Python code with the Generic Visualisation Tools and the API wrapper. On the other hand the module with the Angular front-end (GUI).
+Each module has its Dockerfile and later inside the “dev-ops” folder there is a docker-compose for the integration of both.
+The module containing the Python code with the Generic Visualisation Tools and the API wrapper has been dockerized with the following Dockerfile:
+# Pull base image
+FROM python:3.6
+# Set environment varibles
+ENV PYTHONDONTWRITEBYTECODE 1
+ENV PYTHONUNBUFFERED 1
+ 
+RUN pip install --upgrade pip
+WORKDIR /code/
+# Install dependencies
+COPY code/ ./
+COPY requirements.txt ./
+RUN pip install -r requirements.txt
+ 
+EXPOSE 8000
+CMD ["python", "main.py"]
+
+The module with the Angular front-end (GUI)  has been dockerized with the following Dockerfile:
+# Nodejs Base image
+FROM node
+WORKDIR /app
+ENV PATH /app/node_modules/.bin:$PATH
+# install and app dependencies
+COPY pynalia-front/ ./
+RUN npm install
+RUN npm install -g @angular/cli
+# start app
+CMD ng serve --host 0.0.0.0
+
+To execute this project, we will launch a docker-compose with the following instruction:
+docker-compose -f dev-ops/docker-compose.yml up -d –build
+
+Once this instruction is executed there will have the 2 dockers uploaded in the following paths:
+•	FastApi --> http://localhost:8000/docs
+•	Front End --> http://localhost:4200/
+
+The Front End communicates with the FastApi thrugh an environment variable found in 
 ```
 /pynalia-front/src/environments/environment.ts
 ```
 
-Here I leave a schema of how the received json should be
+The data between these two modules is exchange through a JSON file that meets the following schema:
 
 ```
 {
@@ -118,3 +169,22 @@ An example of the JSON file is shown below:
 }
 
 In addition, a sample JSON file can be found in the "data" folder.
+
+## 4 Built With
+
+* [Bokeh](https://github.com/bokeh/bokeh)
+* [Itertools](https://github.com/rust-itertools/itertools)
+* [Logging](https://pypi.org/project/logging)
+* [Numpy] (https://github.com/numpy/numpy)
+* [Pandas] (https://github.com/pandas-dev/pandas)
+* [Typping] (https://github.com/python/typing)
+* [FastApi] (https://github.com/tiangolo/fastapi)
+* [Angular] (https://github.com/angular)
+
+
+## 5 License
+
+Licensed under the Apache 2.0. See LICENSE.txt for more details. For respective licenses of individual components and libraries please refer to section 4.
+
+## 6 More information
+More technical information regarding the developed dashboard is provided in the public deliverable "D5.4-Energy Analytics dashboard for business analysts"
