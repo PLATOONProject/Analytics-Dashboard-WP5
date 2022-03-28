@@ -1,0 +1,357 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+"""
+Created on: 2019/08/05
+@author: miguel.esteras@tecnalia.com
+
+Visualize data for TESOL 4.1 project.
+"""
+
+import os
+import errno
+from logging import getLogger
+from configparser import ConfigParser
+from pandas import read_pickle
+from datetime import datetime
+from bokeh.plotting import output_file, show
+from bokeh.models import Text, ColumnDataSource
+from bokeh.layouts import layout
+from pathlib import Path
+from lib.pynalia.plotting import histograms, scatter, correlation, time_lines, time_range_tool, \
+    lines, area_stacked
+from lib.pynalia.learning import regression
+
+
+class Visualize:
+
+    def __init__(self, label, subclass, log=None):
+        # set logger
+        self.logger = getLogger('__main__') if log is None else log
+        # parse config.ini file
+        self.config = ConfigParser(allow_no_value=True)
+        self.config.read('config.ini')
+        self.label = label
+        self.folder = subclass.lower()
+        try:
+            os.makedirs(f'../images/{self.folder}/')
+        except OSError as e:
+            if e.errno != errno.EEXIST:
+                raise
+        try:
+            self.current = self.config[self.label]["AC_INPUTS"].split(",")[0]
+            self.temp_in = self.config[label]['TEMP_IN']
+            self.temp_out = self.config[label]['TEMP_OUT']
+            self.pressure_in = self.config[label]['PRESSURE_IN']
+            self.pressure_out = self.config[label]['PRESSURE_OUT']
+            self.power_on = self.config[label]['POWER_ON']
+            self.freq = int(self.config[label]['SAMPLING_FREQ_RATE(S)'])
+            self.ac_inputs = self.config[label]["AC_INPUTS"].split(",")
+            self.bearing_vibs = self.config[label]['BEARING_VIBRATIONS'].split(",")
+            self.bearing_temp = self.config[label]['BEARING_TEMPS'].split(",")
+            self.flow = self.config[label]['DOWNLOAD_FLOW'].split(",")
+            self.download_pressures = self.config[label]['DOWNLOAD_PRESSURE'].split(",")
+            self.n = int(self.config['CIS']['TIME_INTERVALS'])
+            self.startup = int(self.config['CIS']['STARTUP_TIME(DAYS)'])
+            self.life = [(datetime.strptime(x.split('/')[0], '%d-%m-%Y'),
+                          datetime.strptime(x.split('/')[1], '%d-%m-%Y'))
+                         for x in self.config[label][subclass].split(",")]
+            self.failures = [datetime.strptime(x, '%d-%m-%Y')
+                             for x in self.config[label]["EXPECTED_FAILURES"].split(",")]
+        except KeyError:
+            self.logger.warning("Key not found in config.ini")
+
+    def exe(self):
+        df = read_pickle(Path(f"../repo/processed/{self.folder}/{self.label}_data_clean.pkl"))
+        self.deltap_flow(df)
+        self.deltap_flow_30days(df)
+        # AC input to delta P conversion
+        self.energy_to_power(df)
+        # # correlation between added Pressure and Input AC
+        # self.addedp_input_ac(df)
+
+    def initial_explore(self, obj):
+        # rolling median
+        rr = obj[['flow',
+                  "vibr_nde", "vibr_de",
+                  'deltaP']].rolling(self.n, min_periods=1).median().iloc[::self.n]
+        rr.insert(0, self.power_on, obj[self.power_on].iloc[::self.n])
+        p1 = time_lines(rr, yvar='flow', height=200)
+        p2 = time_lines(rr, yvar=["vibr_nde", "vibr_de"], height=200, yrange=(-50, 50),
+                        xrange=p1.x_range)
+        p3 = time_lines(rr, yvar='deltaP', height=200,
+                        xrange=p2.x_range)
+        xpan = time_range_tool(rr, yvar=self.power_on, height=150, xrange=p3.x_range)
+        # save plot to html file
+        plots = [p1, p2, p3, xpan]
+        # save plot to html file
+        output_file(Path(f"../images/{self.folder}/{self.label}_initial_explore.html"))
+        show(layout(*plots))
+        return
+
+    def all_histograms(self, obj):
+        p = histograms(obj)
+        output_file(Path(f"../images/{self.folder}/{self.label}_data_hist.html"))
+        show(p)
+        return
+
+    def feature_corr(self, obj):
+        p = correlation(obj.loc[~obj[self.power_on].astype(bool)])
+        output_file(Path(f"../images/{self.folder}/{self.label}_data_correlations_power_off.html"))
+        show(p)
+        # correlation pump power on
+        p = correlation(obj.loc[obj[self.power_on].astype(bool)])
+        output_file(Path(f"../images/{self.folder}/{self.label}_data_correlations_power_on.html"))
+        show(p)
+        return
+
+    #############################################################################################
+    # Visuals Power Pump ON
+    #############################################################################################
+    def deltap_flow(self, obj):
+        # rolling median
+        rr = obj[['flow', 'deltaP', self.power_on]] \
+                 .rolling(self.n, min_periods=1) \
+                 .median().iloc[::self.n]
+        # insert time of next fail
+        rr.insert(0, 'life_end', obj['life_end'].iloc[::self.n].dt.strftime('%Y-%m-%d'))
+        # filter data
+        source = rr[(rr[self.power_on] == 1)]
+        # source = rr[(rr[self.power_on] == 1) &
+        #             (rr['flow'] >= 30) & (rr['flow'] < 100) &
+        #             (rr['deltaP'] > 90)]
+        # plot
+        p = scatter(source, 'flow', 'deltaP', hist_axes=True, nbins=100, regression=True,
+                    deg=2, size=0.05, fill_alpha=0.4, groupby='life_end')
+        # save plot to html file
+        output_file(Path(f"../images/{self.folder}/{self.label}_deltaP_flow.html"))
+        show(p)
+        return
+
+    def deltap_flow_byrul(self, obj):
+        for start, end in self.life:
+            # rolling median
+            rr = obj[(obj.index >= start) & (obj.index <= end)][
+                     ['flow', 'deltaP', 'rul_on_hour', self.power_on]] \
+                     .rolling(self.n, min_periods=1) \
+                     .median().iloc[::self.n]
+            # filter data
+            source = rr[(rr[self.power_on] == 1) &
+                        (rr['flow'] >= 20) & (rr['flow'] < 100) &
+                        (rr['deltaP'] > 90)]
+            # plot
+            p = scatter(source, 'flow', 'deltaP', hist_axes=True, nbins=100,
+                        deg=2, size=0.05, fill_alpha=0.4, color='rul_on_hour')
+            # save plot to html file
+            label = end.strftime('%Y%m%d')
+            output_file(Path(f"../images/{self.folder}/{self.label}_deltaP_flow_rul_{label}.html"))
+            show(p)
+        return
+
+    def energy_to_power(self, obj):
+        for start, end in self.life:
+            # rolling median
+            rr = obj[(obj.index >= start) & (obj.index <= end)][
+                     ['flow', 'deltaP', 'rul_on_hour', 'dP*F/A',
+                      self.power_on] + self.ac_inputs] \
+                     .rolling(self.n, min_periods=1) \
+                     .median().iloc[::self.n]
+            # filter data
+            source = rr[(rr[self.power_on] == 1)]
+
+            # source = rr[(rr[self.power_on] == 1) &
+            #             (rr['flow'] >= 30) & (rr['flow'] < 100) &
+            #             (rr['deltaP'] > 90) &
+            #             (rr['dP*F/A'] < 200)]
+            # plot
+            p = scatter(source, 'flow', 'dP*F/A', hist_axes=True, nbins=150,
+                        deg=2, size=0.1, fill_alpha=0.3, color='rul_on_hour')
+            # save plot to html file
+            label = end.strftime('%Y%m%d')
+            output_file(Path(f"../images/{self.folder}/{self.label}_energy_to_power_{label}.html"))
+            show(p)
+        return
+
+    def addedp_input_ac(self, obj):
+        for start, end in self.life:
+            # rolling median
+            rr = obj[(obj.index >= start) & (obj.index <= end)][['flow', 'deltaP', 'rul_on_hour',
+                                                                 self.power_on] + self.ac_inputs] \
+                     .rolling(self.n, min_periods=1) \
+                     .median().iloc[::self.n]
+            rr.insert(0, 'Input AC', (rr[self.ac_inputs].sum(axis=1)) / 3)
+            rr.insert(0, 'addedP', rr['flow'] * rr['deltaP'])
+            # filter data
+            source = rr[(rr[self.power_on] == 1)]
+
+            # source = rr[(rr[self.power_on] == 1) &
+            #             (rr['flow'].between(30, 100)) &
+            #             (rr['deltaP'] > 90) &
+            #             (rr['Input AC'].between(35, 60)) &
+            #             (rr['addedP'] > 4000)]
+            # plot
+            p = scatter(source, 'addedP', 'Input AC', hist_axes=True, nbins=150,
+                        deg=1, size=0.1, fill_alpha=0.3, color='rul_on_hour')
+            # save plot to html file
+            date = end.strftime('%Y%m%d')
+            output_file(Path(f"../images/{self.folder}/{self.label}_addedP_inputAC_{date}.html"))
+            show(p)
+        return
+
+    def deltap_flow_30days(self, obj):
+        for start, end in self.life:
+            # rolling median
+            rr = obj[(obj.index >= start) & (obj.index <= end)][
+                     ['flow', 'deltaP', 'rul_on_hour', self.power_on]] \
+                     .rolling(self.n, min_periods=1) \
+                     .median().iloc[::self.n]
+            # filter data
+            start = rr[(rr[self.power_on] == 1)][
+                    :int(self.startup * 24 * (3600 / (self.freq * self.n)))]
+            source = rr[(rr[self.power_on] == 1)]
+
+            # start = rr[(rr['flow'] >= 20) & (rr['flow'] < 200) &
+            #            (rr['deltaP'] > 50)][
+            #         :int(self.startup * 24 * (3600 / (self.freq * self.n)))]
+            # source = rr[(rr['flow'] >= 20) & (rr['flow'] < 200) &
+            #             (rr['deltaP'] > 50)]
+            # calculate regression
+            reg, _ = regression(start, 'flow', 'deltaP', deg=2)
+            # plot
+            p = scatter(source, 'flow', 'deltaP', hist_axes=True, nbins=100,
+                        size=0.05, fill_alpha=0.4, color='rul_on_hour', add_reg=reg)
+            # save plot to html file
+            label = end.strftime('%Y%m%d')
+            output_file(
+                Path(f"../images/{self.folder}/{self.label}_deltaP_flow_30days_{label}.html"))
+            show(p)
+        return
+
+    #############################################################################################
+    # Visuals of CIs
+    #############################################################################################
+    def cis_change(self):
+        data = read_pickle(Path(f"../repo/processed/{self.folder}/{self.label}_cis.pkl"))
+        data = data.groupby(['life_end', 'rul_on_hour']).median().reset_index()
+        plots = []
+        for col in [a for a in data if
+                    any(b in a for b in ['change_raw', 'vibr_']) and 'smooth' not in a]:
+            try:
+                xrange = p.x_range
+            except NameError:
+                xrange = [data['rul_on_hour'].max(), 0]
+
+            p = lines(data.dropna(subset=[col]), xvar='rul_on_hour',
+                      yvar=col, height=300, xrange=xrange, groupby='life_end',
+                      title=col, legend_location='center_left')
+            plots.append(p)
+        # save plot to html file
+        output_file(Path(f"../images/{self.folder}/{self.label}_cis_change.html"))
+        show(layout(*plots))
+
+    def cis_smooth(self):
+        data = read_pickle(Path(f"../repo/processed/{self.folder}/{self.label}_cis.pkl"))
+        data = data.groupby(['life_end', 'rul_on_hour']).mean().reset_index()
+        plots = []
+        for col in [a for a in data if 'change_smooth' in a]:
+            try:
+                xrange = p.x_range
+            except NameError:
+                xrange = [data['rul_on_hour'].max(), 0]
+
+            p = lines(data.dropna(subset=[col]), xvar='rul_on_hour',
+                      yvar=col, height=300, xrange=xrange, groupby='life_end',
+                      title=col, legend_location='center_left')
+            plots.append(p)
+        # save plot to html file
+        output_file(Path(f"../images/{self.folder}/{self.label}_cis_smooth.html"))
+        show(layout(*plots))
+
+    def cis_raw(self):
+        data = read_pickle(Path(f"../repo/processed/{self.folder}/{self.label}_cis.pkl"))
+        data = data.groupby(['life_end', 'rul_on_hour']).median().reset_index()
+        plots = []
+        for col in [a for a in data
+                    if a in ['deltaP', 'efficiency', 'inputAC', 'vibr_de_on',
+                             'outliers_distance_change_raw']]:
+            try:
+                xrange = p.x_range
+            except NameError:
+                xrange = [data['rul_on_hour'].max(), 0]
+
+            p = lines(data.dropna(subset=[col]), xvar='rul_on_hour',
+                      yvar=col, height=300, xrange=xrange, groupby='life_end',
+                      title=col, legend_location='center_left')
+            plots.append(p)
+        # save plot to html file
+        output_file(Path(f"../images/{self.folder}/{self.label}_cis_raw.html"))
+        show(layout(*plots))
+
+    def composite(self):
+        data = read_pickle(Path(f"../repo/processed/{self.folder}/{self.label}_cis_composite.pkl"))
+        data.insert(0, 'legend', data['life_end'].apply(lambda x: x.split(', ')[1]))
+        cis_data = read_pickle(Path(f"../repo/processed/{self.folder}/{self.label}_cis.pkl"))
+        for col in [a for a in data if 'modulus' in a]:
+            if len(data['life_end'].unique()) == 1:
+                failure_ruls = [cis_data[cis_data.index <= a.date()]['rul_on_hour'].min()
+                                for a in self.failures]
+                p = lines(data.dropna(subset=[col]), xvar='rul_on_hour',
+                          yvar=col, xrange=[data['rul_on_hour'].max(), -int(data['rul_on_hour'].max() / 30)], title=col,
+                          legend_location='center_left', height=600, vline=failure_ruls)
+                text_source = {'x': failure_ruls,
+                               'y': [data[col].max() * [0.99, 0.96, 0.93][n % 3] for n, _ in enumerate(self.failures)],
+                               'text': [f'{a.strftime("%d-%m-%Y")}' for a in self.failures]}
+                glyph = Text(x="x", y="y", text="text", text_color="black",
+                             text_font_size='8pt', x_offset=-int(data['rul_on_hour'].max() / 600))
+                p.add_glyph(ColumnDataSource(text_source), glyph)
+            else:
+                p = lines(data.fillna(1), xvar='rul_on_hour', groupby='legend',
+                          yvar=col, xrange=[data['rul_on_hour'].max(), 0], title=col,
+                          legend_location='center_left', height=600,
+                          background='white')
+                p.harea(x1=[data['rul_on_hour'].max()] * 2, x2=[0] * 2, y=[0, 6], color='green',
+                        alpha=0.1)
+                p.harea(x1=[data['rul_on_hour'].max()] * 2, x2=[0] * 2, y=[6, 8], color='yellow',
+                        alpha=0.1)
+                p.harea(x1=[data['rul_on_hour'].max()] * 2, x2=[0] * 2, y=[8, data[col].max()],
+                        color='red', alpha=0.1)
+            output_file(Path(f"../images/{self.folder}/{self.label}_composite_{col}.html"))
+            show(p)
+        return
+
+    def composite_stack(self):
+        data = read_pickle(Path(f"../repo/processed/{self.folder}/{self.label}_cis_composite.pkl"))
+        data.insert(0, 'legend', data['life_end'].apply(lambda x: x.split(', ')[1]))
+        cis_data = read_pickle(Path(f"../repo/processed/{self.folder}/{self.label}_cis.pkl"))
+        ymax = data.weighted_modulus.max()
+        if len(data['life_end'].unique()) == 1:
+            variables = [col for col in data if col.endswith('_weighted')]
+            failure_ruls = [cis_data[cis_data.index <= a.date()]['rul_on_hour'].min()
+                            for a in self.failures]
+
+            p = area_stacked(data, xvar='rul_on_hour', yvar=variables,
+                             xrange=[data['rul_on_hour'].max() + int(data['rul_on_hour'].max() / 30),
+                                     -int(data['rul_on_hour'].max() / 30)],
+                             title='CIs decomposition', height=600, vline=failure_ruls)
+            text_source = {'x': failure_ruls,
+                           'y': [ymax * [0.99, 0.96, 0.93][n % 3] for n, _ in enumerate(self.failures)],
+                           'text': [f'{a.strftime("%d-%m-%Y")}' for a in self.failures]}
+            glyph = Text(x="x", y="y", text="text", text_color="black",
+                         text_font_size='8pt', x_offset=-int(data['rul_on_hour'].max() / 600))
+            p.add_glyph(ColumnDataSource(text_source), glyph)
+            output_file(Path(f"../images/{self.folder}/{self.label}_composite_stacked.html"))
+            show(p)
+            return
+        else:
+            for end in sorted(data['life_end'].unique()):
+                variables = [col for col in data if col.endswith('_weighted')]
+                fail = data[data['life_end'] == end]
+                p = area_stacked(fail, xvar='rul_on_hour', yvar=variables,
+                                 xrange=[fail['rul_on_hour'].max() + int(
+                                     fail['rul_on_hour'].max() / 30),
+                                         -int(fail['rul_on_hour'].max() / 30)],
+                                 title=f'CIs decomposition - {end}', height=400,
+                                 vline=[0, fail['rul_on_hour'].max()])
+                output_file(
+                    Path(f"../images/{self.folder}/{self.label}_composite_stacked_{end}.html"))
+                show(p)
+            return

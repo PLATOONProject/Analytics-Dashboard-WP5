@@ -1,5 +1,7 @@
 # plots.py
 import numpy as np
+import pandas as pd
+import datetime
 from bokeh.layouts import layout
 from bokeh.models import (Range1d, ColumnDataSource, RangeTool,
                           LinearColorMapper, BasicTicker,
@@ -1613,9 +1615,13 @@ def plot_blanks(df: DataFrame, title: str, width: int = 400, height: int = 800,
                                             df.columns.values)}
     p.xaxis.major_label_orientation = 1.2
     # format y axis
-    ylabels = sorted(set(df.index.values))
+    ylabels = sorted(set(df.index.value))
+    #ylabels = sorted(set(df.index))
     if datetime_index:
         ylabels = [x.strftime("%d-%B-%Y") for x in ylabels]
+        #import pandas as pd
+        #ylabels = [pd.to_datetime(str(x)).strftime("%d-%B-%Y") for x in ylabels]
+
     p.yaxis.ticker = FixedTicker(
         ticks=[int(y) for y in linspace(0, len(ylabels) - 1, 20)])
     p.yaxis.major_label_overrides = {int(y): ylabels[::-1][int(y)] for y

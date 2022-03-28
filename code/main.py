@@ -12,7 +12,7 @@ from starlette.middleware.cors import CORSMiddleware
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
-from plots import time_lines, time_range_tool, scatter, time_scatter, time_bars, histograms, correlation
+from plots import time_lines, time_range_tool, scatter, time_scatter, time_bars, histograms, correlation, heatmap
 
 middleware = [
     Middleware(
@@ -95,7 +95,23 @@ async def generate(dashboards: Dashboards):
             else:
                 p = time_lines(obj=data_cds[plot.params], **p_params)
                 app.firstPlotWithXRange = True
+
+
+            #def plot_blanks(df: DataFrame, title: str, width: int = 400, height: int = 800,
+            #                palette: str = "Blues8",
+            #                datetime_index: bool = True) -> figure:
+            #p = plot_blanks(df=data_cds,title='plots', **p_params)
+
+            #def plot_table(obj: Union[DataFrame, Series], column_names: List[str] = None,
+            #               datetime_index: bool = True,
+            #               height: int = 600, width: int = 1600, decimals: int = 2,
+            #               title: str = None) -> figure:
+            #p = plot_table(obj=data_cds)
+
+            #p = lines(obj=data_cds[plot.params], **p_params)
+
             p_lines.append(p)
+            print(p_lines)
             app.plots = True
         elif plot.name == 'dots':
             if app.firstPlotWithXRange:
@@ -110,6 +126,14 @@ async def generate(dashboards: Dashboards):
                 p = time_bars(obj=data_cds, yvar=[plot.params], xrange=p.x_range, **p_params)
             else:
                 p = time_bars(obj=data_cds, yvar=[plot.params], **p_params)
+                app.firstPlotWithXRange = True
+            p_lines.append(p)
+            app.plots = True
+        elif plot.name == 'heatmap':
+            if app.firstPlotWithXRange:
+                p = heatmap(obj=data_cds, xvar=plot.params, yvar=plot.params, value=plot.params, xrange=p.x_range, **p_params)
+            else:
+                p = heatmap(obj=data_cds, xvar=plot.params, yvar=plot.params, value=plot.params, **p_params)
                 app.firstPlotWithXRange = True
             p_lines.append(p)
             app.plots = True
